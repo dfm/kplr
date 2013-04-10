@@ -11,7 +11,8 @@ url = "http://archive.stsci.edu/search_fields.php"
 
 types = {"string": "unicode", "datetime": "unicode", "float": "float",
          "integer": "int", "numeric": "unicode", "ra": "float",
-         "dec": "float", "real": "float", "double": "float"}
+         "dec": "float", "real": "float", "double": "float",
+         "ustring": "unicode"}
 
 
 def gen_adaptor(mission):
@@ -39,3 +40,6 @@ if __name__ == "__main__":
 
     print("\nKOIs")
     gen_adaptor("kepler_koi")
+
+    print("\nData Search")
+    gen_adaptor("kepler")
