@@ -17,7 +17,7 @@ if sys.argv[-1] == "publish":
 
 setup(
     name="kplr",
-    version="0.0.1",
+    version="0.0.2",
     author="Daniel Foreman-Mackey",
     author_email="danfm@nyu.edu",
     packages=["kplr"],
