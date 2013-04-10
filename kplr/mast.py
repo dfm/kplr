@@ -4,7 +4,7 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["API", "KOI", "Planet"]
+__all__ = ["API", "KOI", "Planet", "Dataset"]
 
 import os
 import logging
