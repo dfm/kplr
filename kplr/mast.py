@@ -34,6 +34,7 @@ class API(object):
 
         try:
             return r.json()
+
         except ValueError:
             return None
 
@@ -44,12 +45,7 @@ class API(object):
         """
         params["max_records"] = params.pop("max_records", 100)
         params["ordercolumn1"] = "kepoi"
-
-        # # Special case to deal with the ``kepoi<N`` type queries.
-        # if unicode(params.get("kepoi", " ")[0]) == "<":
-        #     maxkoi = float(params["kepoi"][1:])
-        # else:
-        #     maxkoi = 1e10
+        params["ordercolumn2"] = params.pop("sort", None)
 
         # Submit the initial request.
         kois = self.request("koi", **params)
@@ -60,19 +56,23 @@ class API(object):
         for k in kois:
             yield KOI(k)
 
-        raise StopIteration()
+        # If we got here then let's check to make sure that there isn't
+        # already a constraint on ``kepoi``. If there is, I'm not sure how to
+        # deal with it yet.
+        assert "kepoi" not in params, ("The streaming KOI search doesn't "
+                                       "play well with filters on 'kepoi'. "
+                                       "Try a larger 'max_records' or filter "
+                                       "on another column.")
 
         # Try to get more KOIs if they exist.
         while True:
-            params["kepoi"] = ">{0}".format(kois[-1]["kepoi"])
+            params["kepoi"] = ">{0}".format(kois[-1]["KOI Number"])
             kois = self.request("koi", **params)
             if kois is None:
                 raise StopIteration()
 
             # Yield these ones too.
             for k in kois:
-                if float(k["kepoi"]) > maxkoi:
-                    raise StopIteration()
                 yield KOI(k)
 
     def planets(self, **params):
@@ -109,6 +109,7 @@ class APIModel(object):
     _parameters = {"_id": None}
 
     def __init__(self, params):
+        params = dict(params)
         self._values = {}
         for k, v in self._parameters.iteritems():
             try:
@@ -139,6 +140,13 @@ class APIModel(object):
         except KeyError:
             raise AttributeError("{0} has no attribute '{1}'"
                                  .format(self.__class__.__name__, k))
+
+    def keys(self):
+        return self._values.keys()
+
+    def iteritems(self):
+        for k, v in self._values.iteritems():
+            yield k, v
 
 
 class KOI(APIModel):
