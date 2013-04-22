@@ -7,6 +7,7 @@ from __future__ import (division, print_function, absolute_import,
 __all__ = ["API", "KOI", "Planet", "Dataset"]
 
 import os
+import re
 import logging
 import requests
 
@@ -71,6 +72,17 @@ class API(object):
         for k in kois:
             yield KOI(k)
 
+    def koi(self, koi_number):
+        """
+        Find a single KOI given a KOI number (e.g. 145.01).
+
+        """
+        try:
+            return self.kois(kepoi=koi_number).next()
+        except StopIteration:
+            raise ValueError("No KOI found with the number: '{0}'"
+                             .format(koi_number))
+
     def planets(self, **params):
         """
         Get a list of all the confirmed planets.
@@ -83,6 +95,21 @@ class API(object):
 
         for p in planets:
             yield Planet(p)
+
+    def planet(self, name):
+        """
+        Get a planet by the Kepler name (e.g. "6b" or "Kepler-62b").
+
+        """
+        matches = re.findall("([0-9]+)[-\s]*([a-zA-Z])", name)
+        if len(matches) != 1:
+            raise ValueError("Invalid planet name '{0}'".format(name))
+        kepler_name = "Kepler-{0} {1}".format(*(matches[0]))
+        try:
+            return self.planets(kepler_name=kepler_name, max_records=1).next()
+        except StopIteration:
+            raise ValueError("No planet found with the name: '{0}'"
+                             .format(kepler_name))
 
     def data(self, kepler_id):
         """
@@ -293,6 +320,11 @@ class KOI(APIModel):
         "Last Update": ("rowupdate", unicode),
     }
 
+    @property
+    def data(self):
+        api = API()
+        return api.data(self.kepid)
+
 
 class Planet(APIModel):
 
@@ -302,7 +334,7 @@ class Planet(APIModel):
         "Kepler ID": ("kepid", int),
         "KOI Name": ("kepoi_name", unicode),
         "Alt Name": ("alt_name", unicode),
-        "KOI Number": ("koi", unicode),
+        "KOI Number": ("koi_number", unicode),  # Just `koi` in API.
         "RA (J2000)": ("degree_ra", float),
         "RA Error": ("ra_err", float),
         "Dec (J2000)": ("degree_dec", float),
@@ -343,6 +375,22 @@ class Planet(APIModel):
         "KOI List": ("koi_list_flag", unicode),
         "Last Update": ("koi_vet_date", unicode),
     }
+
+    def __init__(self, *args, **params):
+        super(Planet, self).__init__(*args, **params)
+        self._koi = None
+
+    @property
+    def data(self):
+        api = API()
+        return api.data(self.kepid)
+
+    @property
+    def koi(self):
+        if self._koi is None:
+            api = API()
+            self._koi = api.koi(self.koi_number)
+        return self._koi
 
 
 class Dataset(APIModel):
