@@ -9,7 +9,11 @@ __all__ = ["API", "KOI", "Planet", "Dataset"]
 import os
 import re
 import logging
-import requests
+
+try:
+    import requests
+except ImportError:
+    requests = None
 
 
 # Root directory for local data.
@@ -25,6 +29,11 @@ except os.error:
 class API(object):
 
     base_url = "http://archive.stsci.edu/kepler/{0}/search.php"
+
+    def __init__(self):
+        if not requests:
+            raise ImportError("The requests module is required to interface "
+                              "with the MAST API.")
 
     def request(self, category, **params):
         """

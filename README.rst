@@ -14,6 +14,11 @@ You can install the module by running:
 
     pip install kplr
 
+If you want to access the MAST API, you'll need the `requests
+<http:python-requests.org>`_ module and if you want to load light curve data
+sets, you'll need `numpy <http://www.numpy.org/>`_ and `pyfits
+<http://pythonhosted.org/pyfits/>`_.
+
 Usage
 -----
 
@@ -68,11 +73,10 @@ you can try:
 
 This will download the FITS files containing the light curves to the directory
 given by the ``KPLR_DATA_DIR`` environment variable (or ``~/.kplr/data`` by
-default). To load one of the files, you can use `pyfits
-<http://pythonhosted.org/pyfits/>`_:
+default). To load one of the files, you'll need to make sure that you have
+`pyfits <http://pythonhosted.org/pyfits/>`_ installed and then you can use the
+``Dataset`` object:
 
 .. code-block:: python
 
-    import pyfits
-    with pyfits.open(datasets[0].filename) as f:
-        print(f[1].data)
+    data = kplr.Dataset(datasets[0].filename)

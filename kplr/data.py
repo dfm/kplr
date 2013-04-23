@@ -7,10 +7,23 @@ from __future__ import (division, print_function, absolute_import,
 __all__ = ["KeplerDataset"]
 
 import copy
-import pyfits
-import numpy as np
 from . import kplr
 
+# These dependencies are optional for the ``kplr`` module but required to load
+# a dataset. An ``ImportError`` exception will be raised when you try to load
+# a file if any of these aren't installed.
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    import pyfits
+except ImportError:
+    pyfits = None
+
+# ``untrendy`` is only required if you try to "untrend" a dataset so the
+# ``ImportError`` will be raised then.
 try:
     import untrendy
 except ImportError:
@@ -43,6 +56,10 @@ class KeplerDataset(object):
     """
 
     def __init__(self, filename, untrend=False, **untrendy_args):
+        if not np or not pyfits:
+            raise ImportError("numpy and pyfits are required to load a "
+                              "dataset.")
+
         self.filenames = [filename]
         with pyfits.open(filename) as f:
             # Find the cadence of the dataset and save the approximate
