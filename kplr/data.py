@@ -4,7 +4,7 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["KeplerDataset"]
+__all__ = ["Dataset"]
 
 import copy
 from . import kplr
@@ -30,7 +30,7 @@ except ImportError:
     untrendy = None
 
 
-class KeplerDataset(object):
+class Dataset(object):
     """
     An interface to a Kepler light curve dataset.
 

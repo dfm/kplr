@@ -4,7 +4,7 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["API", "KOI", "Planet", "Dataset"]
+__all__ = ["API", "KOI", "Planet"]
 
 import os
 import re
@@ -133,7 +133,7 @@ class API(object):
         if data_list is None:
             raise StopIteration()
         for d in data_list:
-            yield Dataset(d)
+            yield _dataset(d)
 
 
 class APIModel(object):
@@ -402,7 +402,7 @@ class Planet(APIModel):
         return self._koi
 
 
-class Dataset(APIModel):
+class _dataset(APIModel):
 
     _id = "\"{sci_data_set_name}_{ktc_target_type}\""
     _parameters = {
