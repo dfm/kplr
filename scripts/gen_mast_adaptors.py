@@ -41,5 +41,8 @@ if __name__ == "__main__":
     print("\nKOIs")
     gen_adaptor("kepler_koi")
 
+    print("\nStars")
+    gen_adaptor("kic10")
+
     print("\nData Search")
     gen_adaptor("kepler")

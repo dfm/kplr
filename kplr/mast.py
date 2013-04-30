@@ -120,6 +120,30 @@ class API(object):
             raise ValueError("No planet found with the name: '{0}'"
                              .format(kepler_name))
 
+    def stars(self, **params):
+        """
+        Get a list of KIC targets.
+
+        """
+        stars = self.request("kic10", **params)
+
+        if stars is None:
+            raise StopIteration()
+
+        for s in stars:
+            yield Star(s)
+
+    def star(self, kepid):
+        """
+        Get a KIC target by id.
+
+        """
+        try:
+            return self.stars(kic_kepler_id=kepid, max_records=1).next()
+        except StopIteration:
+            raise ValueError("No KIC target found with id: '{0}'"
+                             .format(kepid))
+
     def data(self, kepler_id):
         """
         Get the :class:`bart.kepler.DataList` of observations associated with
@@ -152,8 +176,8 @@ class APIModel(object):
         self._name = self._id.format(**self._values)
 
         if len(params):
-            raise TypeError("Unrecognized parameters: {0}"
-                            .format(", ".join(params.keys())))
+            logging.debug("Unrecognized parameters: {0}"
+                          .format(", ".join(params.keys())))
 
     def __str__(self):
         return "<{0}({1})>".format(self.__class__.__name__, self._name)
@@ -329,10 +353,21 @@ class KOI(APIModel):
         "Last Update": ("rowupdate", unicode),
     }
 
+    def __init__(self, *args, **params):
+        super(KOI, self).__init__(*args, **params)
+        self._star = None
+
     @property
     def data(self):
         api = API()
         return api.data(self.kepid)
+
+    @property
+    def star(self):
+        if self._star is None:
+            api = API()
+            self._star = api.star(self.kepid)
+        return self._star
 
 
 class Planet(APIModel):
@@ -388,6 +423,7 @@ class Planet(APIModel):
     def __init__(self, *args, **params):
         super(Planet, self).__init__(*args, **params)
         self._koi = None
+        self._star = None
 
     @property
     def data(self):
@@ -400,6 +436,68 @@ class Planet(APIModel):
             api = API()
             self._koi = api.koi(self.koi_number)
         return self._koi
+
+    @property
+    def star(self):
+        if self._star is None:
+            api = API()
+            self._star = api.star(self.kepid)
+        return self._star
+
+
+class Star(APIModel):
+
+    _id = "\"{kic_kepler_id}\""
+    _parameters = {
+        "Kepler ID": ("kic_kepler_id", int),
+        "RA (J2000)": ("kic_degree_ra", float),
+        "Dec (J2000)": ("kic_dec", float),
+        "RA PM (arcsec/yr)": ("kic_pmra", float),
+        "Dec PM (arcsec/yr)": ("kic_pmdec", float),
+        "u Mag": ("kic_umag", float),
+        "g Mag": ("kic_gmag", float),
+        "r Mag": ("kic_rmag", float),
+        "i Mag": ("kic_imag", float),
+        "z Mag": ("kic_zmag", float),
+        "Gred Mag": ("kic_gredmag", float),
+        "D51 Mag": ("kic_d51mag", float),
+        "J Mag": ("kic_jmag", float),
+        "H Mag": ("kic_hmag", float),
+        "K Mag": ("kic_kmag", float),
+        "Kepler Mag": ("kic_kepmag", float),
+        "2MASS ID": ("kic_2mass_id", unicode),
+        "2MASS Designation": ("kic_tmid", int),
+        "SCP ID": ("kic_scpid", int),
+        "Alt ID": ("kic_altid", int),
+        "Alt ID Source": ("kic_altsource", int),
+        "Star/Gal ID": ("kic_galaxy", int),
+        "Isolated/Blend ID": ("kic_blend", int),
+        "Var. ID": ("kic_variable", int),
+        "Teff (deg K)": ("kic_teff", int),
+        "Log G (cm/s/s)": ("kic_logg", float),
+        "Metallicity (solar=0.0)": ("kic_feh", float),
+        "E(B-V)": ("kic_ebminusv", float),
+        "A_V": ("kic_av", float),
+        "Radius (solar=1.0)": ("kic_radius", float),
+        "Kepmag Source": ("kic_cq", unicode),
+        "Photometry Qual": ("kic_pq", int),
+        "Astrophysics Qual": ("kic_aq", int),
+        "Catalog key": ("kic_catkey", int),
+        "Scp Key": ("kic_scpkey", int),
+        "Parallax (arcsec)": ("kic_parallax", float),
+        "Gal Lon (deg)": ("kic_glon", float),
+        "Gal Lat (deg)": ("kic_glat", float),
+        "Total PM (arcsec/yr)": ("kic_pmtotal", float),
+        "g-r color": ("kic_grcolor", float),
+        "J-K color": ("kic_jkcolor", float),
+        "g-K color": ("kic_gkcolor", float),
+        "RA hours (J2000)": ("kic_ra", float),
+    }
+
+    @property
+    def data(self):
+        api = API()
+        return api.data(self.kic_kepler_id)
 
 
 class _dataset(APIModel):
