@@ -79,7 +79,7 @@ class Dataset(object):
             self.time = np.array(data["TIME"], dtype=float)
 
             # Read in the raw aperture photometry of the light curve.
-            self.sapflux = np.array(data["SAP_FLUX_ERR"], dtype=float)
+            self.sapflux = np.array(data["SAP_FLUX"], dtype=float)
             self.sapferr = np.array(data["SAP_FLUX_ERR"], dtype=float)
             self.sapmask = ~(np.isnan(self.time) +
                              np.isnan(self.sapflux) +
@@ -109,8 +109,8 @@ class Dataset(object):
             untrendy_args["fill_times"] = untrendy_args.get("fill_times",
                                                             10 ** -1.25)
             self.flux, self.ferr = untrendy.untrend(self.time,
-                                                    self.pdcflux,
-                                                    self.pdcferr,
+                                                    self.sapflux,
+                                                    self.sapferr,
                                                     **untrendy_args)
 
             self.mask = self.sapmask[:]
