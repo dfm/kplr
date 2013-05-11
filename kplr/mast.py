@@ -15,10 +15,10 @@ try:
 except ImportError:
     requests = None
 
+from .config import KPLR_ROOT
 
 # Root directory for local data.
-KPLR_DATA_DIR = os.environ.get("KPLR_DATA_DIR",
-                               os.path.expanduser("~/.kplr/data"))
+KPLR_DATA_DIR = os.path.join(KPLR_ROOT, "data")
 
 try:
     os.makedirs(KPLR_DATA_DIR)
