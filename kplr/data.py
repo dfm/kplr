@@ -55,6 +55,9 @@ class Dataset(object):
 
     """
 
+    __type__ = "lc"
+    vector = []
+
     def __init__(self, filename, untrend=False, **untrendy_args):
         if not np or not pyfits:
             raise ImportError("numpy and pyfits are required to load a "
@@ -145,3 +148,6 @@ class Dataset(object):
                     getattr(other, attr)[other.mask])[inds])
 
         return new
+
+    def __len__(self):
+        return 0
