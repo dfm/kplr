@@ -81,6 +81,9 @@ class Dataset(object):
             # Read in the timestamps in KBJD.
             self.time = np.array(data["TIME"], dtype=float)
 
+            # Completely remove ANY flagged data for now. FIXME.
+            self.quality = np.array(data["SAP_QUALITY"], dtype=bool)
+
             # Read in the raw aperture photometry of the light curve.
             self.sapflux = np.array(data["SAP_FLUX"], dtype=float)
             self.sapferr = np.array(data["SAP_FLUX_ERR"], dtype=float)
@@ -108,15 +111,18 @@ class Dataset(object):
                 raise ImportError("The untrendy module is required for "
                                   "'untrending' of light curves.")
 
+            m = self.mask = self.sapmask[:]
+            self.flux = np.zeros_like(self.sapflux)
+            self.ferr = np.zeros_like(self.sapflux)
+
             # Untrend the light curve using untrendy.
             untrendy_args["fill_times"] = untrendy_args.get("fill_times",
                                                             10 ** -1.25)
-            self.flux, self.ferr = untrendy.untrend(self.time,
-                                                    self.sapflux,
-                                                    self.sapferr,
-                                                    **untrendy_args)
+            self.flux[m], self.ferr[m] = untrendy.untrend(self.time[m],
+                                                          self.sapflux[m],
+                                                          self.sapferr[m],
+                                                          **untrendy_args)
 
-            self.mask = self.sapmask[:]
             self.ivar = np.zeros_like(self.ferr)
             self.ivar[self.mask] = 1.0 / self.ferr[self.mask] ** 2
         else:
