@@ -87,7 +87,8 @@ class Dataset(object):
             # Read in the raw aperture photometry of the light curve.
             self.sapflux = np.array(data["SAP_FLUX"], dtype=float)
             self.sapferr = np.array(data["SAP_FLUX_ERR"], dtype=float)
-            self.sapmask = ~(np.isnan(self.time) +
+            self.sapmask = ~(self.quality +
+                             np.isnan(self.time) +
                              np.isnan(self.sapflux) +
                              np.isnan(self.sapferr))
             self.sapivar = np.zeros_like(self.sapferr)
@@ -96,7 +97,8 @@ class Dataset(object):
             # Read in the PDC corrected light curve.
             self.pdcflux = np.array(data["PDCSAP_FLUX"], dtype=float)
             self.pdcferr = np.array(data["PDCSAP_FLUX_ERR"], dtype=float)
-            self.pdcmask = ~(np.isnan(self.time) +
+            self.pdcmask = ~(self.quality +
+                             np.isnan(self.time) +
                              np.isnan(self.pdcflux) +
                              np.isnan(self.pdcferr))
             self.pdcivar = np.zeros_like(self.pdcferr)
