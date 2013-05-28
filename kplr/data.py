@@ -81,14 +81,14 @@ class Dataset(object):
             # Read in the timestamps in KBJD.
             self.time = np.array(data["TIME"], dtype=float)
 
-            # Completely remove ANY flagged data for now. FIXME.
-            self.quality = np.array(data["SAP_QUALITY"], dtype=bool)
+            # Check quality flags.
+            self.quality = np.array(data["SAP_QUALITY"], dtype=int)
+            self.qualitymask = ~np.array(self.quality, dtype=bool)
 
             # Read in the raw aperture photometry of the light curve.
             self.sapflux = np.array(data["SAP_FLUX"], dtype=float)
             self.sapferr = np.array(data["SAP_FLUX_ERR"], dtype=float)
-            self.sapmask = ~(self.quality +
-                             np.isnan(self.time) +
+            self.sapmask = ~(np.isnan(self.time) +
                              np.isnan(self.sapflux) +
                              np.isnan(self.sapferr))
             self.sapivar = np.zeros_like(self.sapferr)
@@ -97,8 +97,7 @@ class Dataset(object):
             # Read in the PDC corrected light curve.
             self.pdcflux = np.array(data["PDCSAP_FLUX"], dtype=float)
             self.pdcferr = np.array(data["PDCSAP_FLUX_ERR"], dtype=float)
-            self.pdcmask = ~(self.quality +
-                             np.isnan(self.time) +
+            self.pdcmask = ~(np.isnan(self.time) +
                              np.isnan(self.pdcflux) +
                              np.isnan(self.pdcferr))
             self.pdcivar = np.zeros_like(self.pdcferr)
@@ -113,20 +112,24 @@ class Dataset(object):
                 raise ImportError("The untrendy module is required for "
                                   "'untrending' of light curves.")
 
-            m = self.mask = self.sapmask[:]
+            self.mask = self.sapmask[:]
+            m = self.sapmask * self.qualitymask
             self.flux = np.zeros_like(self.sapflux)
             self.ferr = np.zeros_like(self.sapflux)
 
             # Untrend the light curve using untrendy.
+            mu = np.median(self.sapflux[m])
             untrendy_args["fill_times"] = untrendy_args.get("fill_times",
                                                             10 ** -1.25)
-            self.flux[m], self.ferr[m] = untrendy.untrend(self.time[m],
-                                                          self.sapflux[m],
-                                                          self.sapferr[m],
-                                                          **untrendy_args)
+            model = untrendy.fit_trend(self.time[m], self.sapflux[m] / mu,
+                                       self.sapferr[m] / mu, **untrendy_args)
+            factor = mu * model(self.time[self.mask])
+            self.flux[self.mask] = self.sapflux[self.mask] / factor
+            self.ferr[self.mask] = self.sapferr[self.mask] / factor
 
             self.ivar = np.zeros_like(self.ferr)
             self.ivar[self.mask] = 1.0 / self.ferr[self.mask] ** 2
+
         else:
             self.flux = self.pdcflux[:]
             self.ferr = self.pdcferr[:]
