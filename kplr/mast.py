@@ -171,6 +171,9 @@ class APIModel(object):
         for k, v in self._parameters.iteritems():
             try:
                 self._values[v[0]] = v[1](params.pop(k))
+            except KeyError:
+                logging.warn("Key '{0}' doesn't exist in MAST docs."
+                             .format(k))
             except ValueError:
                 self._values[v[0]] = None
         self._name = self._id.format(**self._values)
