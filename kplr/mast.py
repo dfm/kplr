@@ -176,6 +176,10 @@ class APIModel(object):
                              .format(k))
             except ValueError:
                 self._values[v[0]] = None
+
+        for k, v in self._values.iteritems():
+            setattr(self, k, v)
+
         self._name = self._id.format(**self._values)
 
         if len(params):
