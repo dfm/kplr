@@ -25,6 +25,7 @@ setup(
     license="MIT",
     description="Tools for working with Kepler data in Python",
     long_description=open("README.rst").read(),
+    install_requires=["requests"],
     classifiers=[
         # "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
