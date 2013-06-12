@@ -25,18 +25,15 @@ except os.error:
 
 class API(object):
 
-    base_url = "http://archive.stsci.edu/kepler/{0}/search.php"
+    base_url = ("http://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
+                "/nph-nstedAPI")
 
-    def __init__(self):
-        if not requests:
-            raise ImportError("The requests module is required to interface "
-                              "with the MAST API.")
-
-    def request(self, category, **params):
+    def request(self, table, **params):
         """
-        Submit a request to the API and return the JSON response.
+        Submit a request to the API and return a dictionary of the response
+        parameters.
 
-        :param category:
+        :param table:
             The table that you want to search.
 
         :param params:
@@ -44,23 +41,23 @@ class API(object):
 
         """
         params["action"] = params.get("action", "Search")
-        params["outputformat"] = "JSON"
-        params["coordformat"] = "dec"
-        params["verb"] = 3
-        if "sort" in params:
-            params["ordercolumn1"] = params.pop("sort")
+        # if "sort" in params:
+        #     params["ordercolumn1"] = params.pop("sort")
+        params["table"] = table
 
-        r = requests.get(self.base_url.format(category), params=params)
+        # Submit the request.
+        r = requests.get(self.base_url, params=params)
         logging.info("Fetching URL: '{0}'".format(r.url))
-
         if r.status_code != requests.codes.ok:
             r.raise_for_status()
 
-        try:
-            return r.json()
-
-        except ValueError:
-            return None
+        # Parse the CSV output.
+        csv = r.text.splitlines()
+        columns = csv[0].split(",")
+        result = []
+        for line in csv[1:]:
+            result.append(dict(zip(columns, line.split(","))))
+        return result
 
     def kois(self, **params):
         """
