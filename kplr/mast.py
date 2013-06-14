@@ -22,7 +22,6 @@ class Adapter(object):
         row = dict(row)
         final = {}
         for longname, (shortname, conv) in self._parameters.items():
-            print(shortname)
             try:
                 final[shortname] = conv(row.pop(longname, None))
             except ValueError:
