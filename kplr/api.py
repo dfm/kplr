@@ -136,6 +136,7 @@ class API(object):
             # Empty entries are mapped to None.
             if v == "":
                 tmp[k] = None
+
         return tmp
 
     def kois(self, **params):
@@ -226,6 +227,18 @@ class API(object):
         return stars[0]
 
     def _data_search(self, kepler_id, short_cadence=True):
+        """
+        Run a generic data search on MAST to return a list of dictionaries
+        describing the data products.
+
+        :param kepler_id:
+            The KIC ID of the target star.
+
+        :param short_cadence:
+            A boolean flag that determines whether or not the short cadence
+            data should be included.
+
+        """
         params = {"ktc_kepler_id": kepler_id}
         if not short_cadence:
             params["ktc_target_type"] = "LC"
@@ -238,19 +251,49 @@ class API(object):
                              .format(kepler_id))
         return data_list
 
-    def light_curves(self, kepler_id, short_cadence=True):
+    def light_curves(self, kepler_id, short_cadence=True, fetch=True):
         """
+        Find the set of light curves associated with a KIC target.
+
+        :param kepler_id:
+            The KIC ID of the target star.
+
+        :param short_cadence:
+            A boolean flag that determines whether or not the short cadence
+            data should be included. (default: True)
+
+        :param fetch:
+            A boolean flag that determines whether or not the data file should
+            be downloaded.
 
         """
-        return [LightCurve(self, d) for d in self._data_search(kepler_id,
+        lcs = [LightCurve(self, d) for d in self._data_search(kepler_id,
+               short_cadence=short_cadence)]
+        if fetch:
+            [l.fetch() for l in lcs]
+        return lcs
+
+    def target_pixel_files(self, kepler_id, short_cadence=True, fetch=True):
+        """
+        Find the set of target pixel files associated with a KIC target.
+
+        :param kepler_id:
+            The KIC ID of the target star.
+
+        :param short_cadence:
+            A boolean flag that determines whether or not the short cadence
+            data should be included. (default: True)
+
+        :param fetch:
+            A boolean flag that determines whether or not the data file should
+            be downloaded.
+
+        """
+        tpfs = [TargetPixelFile(self, d) for d in self._data_search(kepler_id,
                 short_cadence=short_cadence)]
-
-    def target_pixel_files(self, kepler_id, short_cadence=True):
-        """
-
-        """
-        return [TargetPixelFile(self, d) for d in self._data_search(kepler_id,
-                short_cadence=short_cadence)]
+        if fetch:
+            [l.fetch() for l in tpfs]
+        return tpfs
 
 
 class Model(object):
