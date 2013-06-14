@@ -8,18 +8,15 @@ __all__ = ["API", "KOI", "Planet"]
 
 import os
 import re
+import urllib
 import logging
-
-try:
-    import requests
-except ImportError:
-    requests = None
+import urllib2
+import requests
 
 from .config import KPLR_ROOT
 
 # Root directory for local data.
 KPLR_DATA_DIR = os.path.join(KPLR_ROOT, "data")
-
 try:
     os.makedirs(KPLR_DATA_DIR)
 except os.error:
@@ -28,14 +25,16 @@ except os.error:
 
 class API(object):
 
-    base_url = "http://archive.stsci.edu/kepler/{0}/search.php"
+    ea_url = ("http://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
+              "/nph-nstedAPI")
+    mast_url = "http://archive.stsci.edu/kepler/{0}/search.php"
 
-    def __init__(self):
-        if not requests:
-            raise ImportError("The requests module is required to interface "
-                              "with the MAST API.")
+    def __init__(self, data_root=None):
+        self.data_root = data_root
+        if self.data_root is None:
+            self.data_root = KPLR_DATA_DIR
 
-    def request(self, category, **params):
+    def ea_request(self, table, **params):
         """
         Submit a request to the API and return the JSON response.
 
@@ -46,24 +45,47 @@ class API(object):
             Any other search parameters.
 
         """
-        params["action"] = params.get("action", "Search")
-        params["outputformat"] = "JSON"
-        params["coordformat"] = "dec"
-        params["verb"] = 3
-        if "sort" in params:
-            params["ordercolumn1"] = params.pop("sort")
+        params["table"] = table
 
-        r = requests.get(self.base_url.format(category), params=params)
-        logging.info("Fetching URL: '{0}'".format(r.url))
+        # Format the URL in the *horrifying* way that EA needs it to be.
+        payload = ["{0}={1}".format(k, urllib.quote_plus(v, "\"'+"))
+                   for k, v in params.items()]
 
-        if r.status_code != requests.codes.ok:
-            r.raise_for_status()
+        # Send the request.
+        r = urllib2.Request(self.ea_url, data="&".join(payload))
+        handler = urllib2.urlopen(r)
+        code = handler.getcode()
+        if int(code) != 200:
+            raise RuntimeError("The Exoplanet Archive returned {0}"
+                               .format(code))
+        txt = handler.read()
 
-        try:
-            return r.json()
+        # Hack because Exoplanet Archive doesn't return HTTP errors.
+        if "ERROR" in txt:
+            raise RuntimeError("The Exoplanet Archive failed with message:\n"
+                               + txt)
 
-        except ValueError:
-            return None
+        # Parse the CSV output.
+        csv = txt.splitlines()
+        columns = csv[0].split(",")
+        result = []
+        for line in csv[1:]:
+            result.append(dict(zip(columns, line.split(","))))
+
+        # Munge the data types.
+        final_result = []
+        for row in result:
+            tmp = {}
+            for k, v in row.items():
+                try:
+                    tmp[k] = float(v)
+                except ValueError:
+                    tmp[k] = v
+                if v.strip() == "":
+                    tmp[k] = None
+            final_result.append(tmp)
+
+        return final_result
 
     def kois(self, **params):
         """
