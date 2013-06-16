@@ -13,9 +13,11 @@ import numpy as np
 from .config import KPLR_ROOT
 
 
-def get_quad_coeffs(teff=5778, logg=None, feh=None, model="sing09"):
+def get_quad_coeffs(teff=5778, logg=None, feh=None, model="sing09",
+                    data_root=None):
     """
-    Get the standard Kepler limb-darkening profile.
+    Get the quadratic coefficients for the standard Kepler limb-darkening
+    profile.
 
     :param teff: (optional)
         The effective temperature in degrees K.
@@ -29,12 +31,10 @@ def get_quad_coeffs(teff=5778, logg=None, feh=None, model="sing09"):
     :model: (optional)
         The theoretical model to use. See :class:`LDCoeffAdaptor`.
 
-    :param bins: (optional)
-        Either the number of radial bins or a list of bin edges. If ``bins``
-        is omitted, the functional form of the profile is returned.
-
-    :param alpha: (optional)
-        The power to scale the radial bin positions by.
+    :param data_root: (optional)
+        The local base directory where the grids will be downloaded to. This
+        can also be set using the ``KPLR_ROOT`` environment variable. The
+        default value is ``~/.kplr``.
 
     """
     # Find the LD coefficients from the theoretical models.
@@ -49,10 +49,14 @@ class LDCoeffAdaptor(object):
 
     :param model: (optional)
         The name of the model that you would like to use. The currently
-        supported models are ``sing09`` and ``claret11`` and the default
-        is ``sing09`` because it is packaged with the standard Bart install.
-        When you use ``claret11`` for the first time, it will download the
-        data file and save it to ``$KPLR_DATA_DIR/ldcoeffs/claret11.txt``.
+        supported models are ``sing09`` and ``claret11``. When you use a model
+        for the first time, it will download the data file and save it to
+        ``{data_root}/ldcoeffs/claret11.txt``.
+
+    :param data_root: (optional)
+        The local base directory where the grids will be downloaded to. This
+        can also be set using the ``KPLR_ROOT`` environment variable. The
+        default value is ``~/.kplr``.
 
     """
 
@@ -61,10 +65,16 @@ class LDCoeffAdaptor(object):
         "claret11": "http://broiler.astrometry.net/~dfm265/ldcoeffs/claret.txt"
     }
 
-    def __init__(self, model="sing09"):
+    def __init__(self, model="sing09", data_root=None):
         if model not in self.models:
             raise TypeError(("Unrecognized model '{0}'. The allowed values "
                              "are {1}.").format(model, self.allowed_models))
+
+        # Save the provided data root directory and fall back on the
+        # ``KPLR_ROOT`` environment variable.
+        self.data_root = data_root
+        if data_root is None:
+            self.data_root = KPLR_ROOT
 
         # Download the data table if it doesn't always exist.
         local_fn = os.path.join(KPLR_ROOT, "ldcoeffs",
