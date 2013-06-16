@@ -45,6 +45,7 @@ a:hover {
 }
 
 #footer {
+    margin-top: 20px;
     padding: 20px 0;
     font-size: 10pt;
     font-style: italic;
@@ -69,8 +70,8 @@ h2 {
     font-size: 0.7em;
     float: left;
     position: relative;
-    width: 30px;
-    margin-left: -30px;
+    width: 22px;
+    margin-left: -22px;
     color: #bbb;
 }
 
