@@ -13,6 +13,7 @@
     {{ super() }}
 
     <link rel="shortcut icon" href="{{ pathto('_static/favicon.png', 1) }}">
+    <link rel="stylesheet" href="{{ pathto('_static/kplr.css', 1) }}" type="text/css" />
 
 {% endblock %}
 
@@ -39,11 +40,9 @@
 
     <div class="container">
         <div id="footer">
-            Copyright {{ copyright }}. Released under
-            <a href="{{ theme_license_link }}">{{ theme_license_name }}</a>.<br>
+            Copyright {{ copyright }}. Released under the MIT License.<br>
             This documentation was lovingly built using
-            <a href="http://sphinx-doc.org/">Sphinx</a> &amp;
-            <a href="http://dan.iel.fm/daftish">a Daftish theme</a>.
+            <a href="http://sphinx-doc.org/">Sphinx</a>.
         </div>
 
         <a href="{{ theme_github }}" class="github">
