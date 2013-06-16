@@ -14,6 +14,17 @@ import logging
 
 
 class Adapter(object):
+    """
+    An :class:`Adapter` is a callable that maps a dictionary to another
+    dictionary with different keys and specified data types. Missing/invalid
+    values will be mapped to ``None``.
+
+    :param parameters:
+        A dictionary of mappers. The keys should be the keys that will be in
+        the input dictionary and the values should be 2-tuples with the output
+        key and the callable type converter.
+
+    """
 
     def __init__(self, parameters):
         self._parameters = parameters
