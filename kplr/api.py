@@ -9,6 +9,7 @@ __all__ = ["API"]
 import os
 import re
 import json
+import types
 import urllib
 import urllib2
 import logging
@@ -46,7 +47,7 @@ class API(object):
     def __repr__(self):
         return self.__str__()
 
-    def ea_request(self, table, **params):
+    def ea_request(self, table, sort=None, **params):
         """
         Submit a request to the Exoplanet Archive API and return a dictionary.
 
@@ -58,6 +59,15 @@ class API(object):
 
         """
         params["table"] = table
+
+        # Deal with sort order.
+        if sort is not None:
+            if isinstance(sort, types.StringTypes):
+                params["order"] = sort
+            else:
+                params["order"] = sort[0]
+                if sort[1] == -1:
+                    params["order"] += "+desc"
 
         # Format the URL in the *horrifying* way that EA needs it to be...
         # they don't un-escape the HTTP parameters!!!
@@ -84,7 +94,7 @@ class API(object):
 
         return [self._munge_dict(row) for row in result]
 
-    def mast_request(self, category, adapter=None, **params):
+    def mast_request(self, category, adapter=None, sort=None, **params):
         """
         Submit a request to the MAST API and return a dictionary of parameters.
 
@@ -99,8 +109,15 @@ class API(object):
         params["outputformat"] = "JSON"
         params["coordformat"] = "dec"
         params["verb"] = 3
-        if "sort" in params:
-            params["ordercolumn1"] = params.pop("sort")
+
+        # Deal with sort order.
+        if sort is not None:
+            if isinstance(sort, types.StringTypes):
+                params["ordercolumn1"] = sort
+            else:
+                params["ordercolumn1"] = sort[0]
+                if sort[1] == -1:
+                    params["descending1"] = "on"
 
         # Send the request.
         r = urllib2.Request(self.mast_url.format(category),
