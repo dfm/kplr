@@ -53,15 +53,12 @@ class API(object):
         r = urllib2.Request(self.ea_url, data="&".join(payload))
         handler = urllib2.urlopen(r)
         code = handler.getcode()
-        if int(code) != 200:
-            raise RuntimeError("The Exoplanet Archive returned {0}"
-                               .format(code))
         txt = handler.read()
 
         # Hack because Exoplanet Archive doesn't return HTTP errors.
-        if "ERROR" in txt:
-            raise RuntimeError("The Exoplanet Archive failed with message:\n"
-                               + txt)
+        if int(code) != 200 or "ERROR" in txt:
+            full_url = handler.geturl() + "?" + "&".join(payload)
+            raise APIError(code, full_url, txt)
 
         # Parse the CSV output.
         csv = txt.splitlines()
@@ -97,8 +94,8 @@ class API(object):
         code = handler.getcode()
         txt = handler.read()
         if int(code) != 200:
-            raise RuntimeError("The MAST API returned {0} with message:\n {1}"
-                               .format(code, txt))
+            full_url = handler.geturl() + "?" + urllib.urlencode(params)
+            raise APIError(code, full_url, txt)
 
         # Parse the JSON.
         result = json.loads(txt)
@@ -296,7 +293,22 @@ class API(object):
         return tpfs
 
 
+class APIError(Exception):
+
+    def __init__(self, code, url, txt):
+        super(APIError, self).__init__(("The API returned code {0} for URL: "
+                                        "'{1}' with message:\n{2}")
+                                       .format(code, url, txt))
+        self.code = code
+        self.txt = txt
+        self.url = url
+
+
 class Model(object):
+    """
+    An abstract
+
+    """
 
     _id = "{_id}"
 
@@ -418,7 +430,7 @@ class _datafile(Model):
         handler = urllib2.urlopen(r)
         code = handler.getcode()
         if int(code) != 200:
-            raise RuntimeError("{0}".format(code))
+            raise APIError(code, url, "")
 
         # Make sure that the root directory exists.
         try:
