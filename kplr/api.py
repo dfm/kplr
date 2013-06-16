@@ -21,6 +21,11 @@ class API(object):
     """
     Interface with MAST and Exoplanet Archive APIs.
 
+    :param data_root: (optional)
+        The local base directory where any data should be downloaded to. This
+        can also be set using the ``KPLR_ROOT`` environment variable. The
+        default value is ``~/.kplr``.
+
     """
 
     ea_url = ("http://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
@@ -45,7 +50,8 @@ class API(object):
         """
         params["table"] = table
 
-        # Format the URL in the *horrifying* way that EA needs it to be.
+        # Format the URL in the *horrifying* way that EA needs it to be...
+        # they don't un-escape the HTTP parameters!!!
         payload = ["{0}={1}".format(k, urllib.quote_plus(v, "\"'+"))
                    for k, v in params.items()]
 
@@ -138,7 +144,7 @@ class API(object):
 
     def kois(self, **params):
         """
-        Get a list of KOIs from the Exoplanet Archive.
+        Get a list of KOIs from The Exoplanet Archive.
 
         :param **params:
             The search parameters for the Exoplanet Archive API.
@@ -294,6 +300,19 @@ class API(object):
 
 
 class APIError(Exception):
+    """
+    Exception raised when an API request fails.
+
+    :param code:
+        The HTTP status code that caused the failure.
+
+    :param url:
+        The endpoint (with parameters) of the request.
+
+    :param txt:
+        A human readable description of the error.
+
+    """
 
     def __init__(self, code, url, txt):
         super(APIError, self).__init__(("The API returned code {0} for URL: "
@@ -306,16 +325,28 @@ class APIError(Exception):
 
 class Model(object):
     """
-    An abstract
+    An abstract base class that provides functions for converting the JSON
+    dictionaries returned by the API into Python objects with the correct
+    properties.
+
+    :param api:
+        A reference to the :class:`API` object that made the request.
+
+    :param params:
+        The dictionary of values returned by the API.
 
     """
 
-    _id = "{_id}"
+    # A format string that generates a unique identifier for the model that
+    # should be overloaded by subclasses.
+    _id = "..."
 
     def __init__(self, api, params):
         self.api = api
+        self.params = params
         for k, v in params.iteritems():
             setattr(self, k, v)
+
         self._name = self._id.format(**params)
 
     def __str__(self):
@@ -325,17 +356,49 @@ class Model(object):
         return self.__str__()
 
     def __repr__(self):
-        return self.__str__()
+        return "<{0}({1}, {2})>".format(self.__class__.__name__,
+                                        repr(self.api),
+                                        json.dumps(self.params))
 
-    def get_light_curves(self, short_cadence=True):
+    def get_light_curves(self, short_cadence=True, fetch=True):
+        """
+        Get a list of light curve datasets for the model and optionally
+        download the FITS files.
+
+        :param short_cadence:
+            A boolean flag that determines whether or not the short cadence
+            data should be included. (default: True)
+
+        :param fetch:
+            A boolean flag that determines whether or not the data file should
+            be downloaded.
+
+        """
         return self.api.light_curves(self.kepid, short_cadence=short_cadence)
 
-    def get_target_pixel_files(self, short_cadence=True):
+    def get_target_pixel_files(self, short_cadence=True, fetch=True):
+        """
+        Get a list of target pixel datasets for the model and optionally
+        download the FITS files.
+
+        :param short_cadence:
+            A boolean flag that determines whether or not the short cadence
+            data should be included. (default: True)
+
+        :param fetch:
+            A boolean flag that determines whether or not the data file should
+            be downloaded.
+
+        """
         return self.api.target_pixel_files(self.kepid,
                                            short_cadence=short_cadence)
 
 
 class KOI(Model):
+    """
+    A model specifying a Kepler Object of Interest (KOI).
+
+    """
 
     _id = "\"{kepoi_name}\""
 
@@ -345,12 +408,25 @@ class KOI(Model):
 
     @property
     def star(self):
+        """
+        The :class:`Star` entry from the Kepler Input Catalog associated with
+        this object.
+
+        """
         if self._star is None:
             self._star = self.api.star(self.kepid)
         return self._star
 
 
 class Planet(Model):
+    """
+    A confirmed planet from the `MAST confirmed_planets table
+    <http://archive.stsci.edu/search_fields.php?mission=kepler_cp>`_. This
+    table has far less—and far less accurate—information than the KOI table
+    so it's generally a good idea to use the ``koi`` property to access the
+    catalog values.
+
+    """
 
     _id = "\"{kepler_name}\""
 
@@ -361,18 +437,34 @@ class Planet(Model):
 
     @property
     def koi(self):
+        """
+        The :class:`KOI` entry that led to this planet. The KOI table is much
+        more complete so the use of this object tends to be preferred over the
+        built in :class:`Planet` property values.
+
+        """
         if self._koi is None:
             self._koi = self.api.koi(self.koi_number)
         return self._koi
 
     @property
     def star(self):
+        """
+        The :class:`Star` entry from the Kepler Input Catalog associated with
+        this object.
+
+        """
         if self._star is None:
             self._star = self.api.star(self.kepid)
         return self._star
 
 
 class Star(Model):
+    """
+    A star from the `Kepler Input Catalog (KIC)
+    <http://archive.stsci.edu/search_fields.php?mission=kic10>`_.
+
+    """
 
     _id = "{kic_kepler_id}"
 
@@ -383,6 +475,10 @@ class Star(Model):
 
     @property
     def kois(self):
+        """
+        The list of :class:`KOI` entries found in this star's light curve.
+
+        """
         if self._kois is None:
             self._kois = self.api.kois(where="kepid like '{0}'"
                                        .format(self.kepid))
@@ -409,14 +505,32 @@ class _datafile(Model):
 
     @property
     def filename(self):
+        """
+        The local filename of the data file. This file is only guaranteed to
+        exist after ``fetch()`` has been called.
+
+        """
         return os.path.join(self.base_dir, self._filename)
 
     @property
     def url(self):
+        """
+        The remote URL for the data file on the MAST servers.
+
+        """
         return self.base_url.format(self.product, self.kepid[:4],
                                     self.kepid, self._filename)
 
     def fetch(self, clobber=False):
+        """
+        Download the data file from the server and save it locally. The local
+        file will be saved in the directory specified by the ``data_root``
+        property of the API.
+
+        :param clobber:
+            Should an existing local file be overwritten? (default: False)
+
+        """
         # Check if the file already exists.
         filename = self.filename
         if os.path.exists(filename) and not clobber:
@@ -446,6 +560,11 @@ class _datafile(Model):
 
 
 class LightCurve(_datafile):
+    """
+    A reference to a light curve dataset on the MAST severs. This object
+    handles local caching of the file in a strict directory structure.
+
+    """
 
     product = "lightcurves"
     suffixes = ["llc", "slc"]
@@ -453,6 +572,12 @@ class LightCurve(_datafile):
 
 
 class TargetPixelFile(_datafile):
+    """
+    A reference to a target pixel dataset on the MAST severs. Like the
+    :class:`LightCurve` object, this object handles local caching of the file
+    in a strict directory structure.
+
+    """
 
     product = "target_pixel_files"
     suffixes = ["lpd-targ", "spd-targ"]

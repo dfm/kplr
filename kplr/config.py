@@ -10,8 +10,3 @@ import os
 
 KPLR_ROOT = os.path.expanduser(os.environ.get("KPLR_DATA_DIR",
                                               os.path.join("~", ".kplr")))
-
-try:
-    os.makedirs(KPLR_ROOT)
-except os.error:
-    pass
