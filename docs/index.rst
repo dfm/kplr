@@ -1,3 +1,5 @@
+.. module:: kplr
+
 A Python interface to the Kepler data
 =====================================
 
@@ -33,6 +35,25 @@ parameters of a KOI and download the light curve data.
     lightcurves = koi.get_light_curves()
     for lc in lightcurves:
         print(lc.filename)
+
+
+Table of Contents
+-----------------
+
+* `Installation`_
+* `API Interface`_
+    * `Kepler Objects of Interest`_
+    * `Confirmed Planets`_
+    * `Kepler Input Catalog Targets`_
+    * `Datasets`_
+* `Data Access`_
+
+For a detailed description of the
+
+.. toctree::
+   :maxdepth: 2
+
+   api
 
 
 Installation
@@ -93,7 +114,7 @@ return the most up to date information possible. In particular, it searches
 the `cumulative table
 <http://exoplanetarchive.ipac.caltech.edu/docs/API_kepcandidate_columns.html>`_.
 As shown in the sample code at the top of this page, it is very easy to
-retrieve the listing for a single KOI:
+retrieve the listing for a single :class:`KOI`:
 
 .. code-block:: python
 
@@ -136,6 +157,5 @@ Kepler Input Catalog Targets
 
 Datasets
 ^^^^^^^^
-
 
 

@@ -4,7 +4,7 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["API"]
+__all__ = ["API", "KOI", "Planet", "Star", "LightCurve", "TargetPixelFile"]
 
 import os
 import re
@@ -54,7 +54,7 @@ class API(object):
         :param table:
             The table that you want to search.
 
-        :param params:
+        :param **params:
             Any other search parameters.
 
         """
@@ -101,7 +101,7 @@ class API(object):
         :param category:
             The table that you want to search.
 
-        :param params:
+        :param **params:
             Any other search parameters.
 
         """
