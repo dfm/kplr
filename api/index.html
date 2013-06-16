@@ -1,0 +1,638 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+<title>kplr—Python Interface</title>
+
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="kplr 0.1.0 documentation" href="../" />
+    <link rel="prev" title="A Python interface to the Kepler data" href="../" />
+
+     
+
+    <link rel="shortcut icon" href="../_static/favicon.png">
+    <link rel="stylesheet" href="../_static/kplr.css" type="text/css" />
+
+
+  </head>
+  <body>  
+
+    <div class="document">
+
+    <div class="container">
+
+        <div class="title">
+            <a href="../">kplr</a>
+        </div>
+        <div class="subtitle">Python Interface</div>
+
+
+        
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-kplr"><span id="api"></span></span><div class="section" id="python-interface">
+<h1>Python Interface<a class="headerlink" href="#python-interface" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="kplr.API">
+<em class="property">class </em><tt class="descclassname">kplr.</tt><tt class="descname">API</tt><big>(</big><em>data_root=None</em><big>)</big><a class="headerlink" href="#kplr.API" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface with MAST and Exoplanet Archive APIs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_root</strong> &#8211; (optional)
+The local base directory where any data should be downloaded to. This
+can also be set using the <tt class="docutils literal"><span class="pre">KPLR_ROOT</span></tt> environment variable. The
+default value is <tt class="docutils literal"><span class="pre">~/.kplr</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="kplr.API.ea_request">
+<tt class="descname">ea_request</tt><big>(</big><em>table</em>, <em>sort=None</em>, <em>**params</em><big>)</big><a class="headerlink" href="#kplr.API.ea_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submit a request to the Exoplanet Archive API and return a dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>table</strong> &#8211; The table that you want to search.</li>
+<li><strong>**params</strong> &#8211; <p>Any other search parameters.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.koi">
+<tt class="descname">koi</tt><big>(</big><em>koi_number</em><big>)</big><a class="headerlink" href="#kplr.API.koi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a single KOI given a KOI number (e.g. 145.01).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>koi_number</strong> &#8211; The number identifying the KOI. This should be a float with the
+<tt class="docutils literal"><span class="pre">.0N</span></tt> for some value of <tt class="docutils literal"><span class="pre">N</span></tt>.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.kois">
+<tt class="descname">kois</tt><big>(</big><em>**params</em><big>)</big><a class="headerlink" href="#kplr.API.kois" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of KOIs from The Exoplanet Archive.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**params</strong> &#8211; <p>The search parameters for the Exoplanet Archive API.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.light_curves">
+<tt class="descname">light_curves</tt><big>(</big><em>kepler_id</em>, <em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.API.light_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the set of light curves associated with a KIC target.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>kepler_id</strong> &#8211; The KIC ID of the target star.</li>
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.mast_request">
+<tt class="descname">mast_request</tt><big>(</big><em>category</em>, <em>adapter=None</em>, <em>sort=None</em>, <em>**params</em><big>)</big><a class="headerlink" href="#kplr.API.mast_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submit a request to the MAST API and return a dictionary of parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>category</strong> &#8211; The table that you want to search.</li>
+<li><strong>**params</strong> &#8211; <p>Any other search parameters.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.planet">
+<tt class="descname">planet</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#kplr.API.planet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a planet by the Kepler name (e.g. &#8220;6b&#8221; or &#8220;Kepler-62b&#8221;).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; The name of the planet.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.planets">
+<tt class="descname">planets</tt><big>(</big><em>**params</em><big>)</big><a class="headerlink" href="#kplr.API.planets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of confirmed (Kepler) planets from MAST.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**params</strong> &#8211; <p>The search parameters for the MAST API.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.star">
+<tt class="descname">star</tt><big>(</big><em>kepid</em><big>)</big><a class="headerlink" href="#kplr.API.star" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a KIC target by id from MAST.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kepid</strong> &#8211; The integer ID of the star in the KIC.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.stars">
+<tt class="descname">stars</tt><big>(</big><em>**params</em><big>)</big><a class="headerlink" href="#kplr.API.stars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of KIC targets from MAST. Only return up to 100 results by
+default.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>**params</strong> &#8211; <p>The query parameters for the MAST API.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.API.target_pixel_files">
+<tt class="descname">target_pixel_files</tt><big>(</big><em>kepler_id</em>, <em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.API.target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the set of target pixel files associated with a KIC target.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>kepler_id</strong> &#8211; The KIC ID of the target star.</li>
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="kepler-objects-of-interest">
+<h2>Kepler Objects of Interest<a class="headerlink" href="#kepler-objects-of-interest" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kplr.KOI">
+<em class="property">class </em><tt class="descclassname">kplr.</tt><tt class="descname">KOI</tt><big>(</big><em>*args</em>, <em>**params</em><big>)</big><a class="headerlink" href="#kplr.KOI" title="Permalink to this definition">¶</a></dt>
+<dd><p>A model specifying a Kepler Object of Interest (KOI).</p>
+<dl class="method">
+<dt id="kplr.KOI.get_light_curves">
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.KOI.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of light curve datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.KOI.get_target_pixel_files">
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.KOI.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of target pixel datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.KOI.star">
+<tt class="descname">star</tt><a class="headerlink" href="#kplr.KOI.star" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#kplr.Star" title="kplr.Star"><tt class="xref py py-class docutils literal"><span class="pre">Star</span></tt></a> entry from the Kepler Input Catalog associated with
+this object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="confirmed-planets">
+<h2>Confirmed Planets<a class="headerlink" href="#confirmed-planets" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kplr.Planet">
+<em class="property">class </em><tt class="descclassname">kplr.</tt><tt class="descname">Planet</tt><big>(</big><em>*args</em>, <em>**params</em><big>)</big><a class="headerlink" href="#kplr.Planet" title="Permalink to this definition">¶</a></dt>
+<dd><p>A confirmed planet from the <a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">MAST confirmed_planets table</a>. This
+table has far less—and far less accurate—information than the KOI table
+so it&#8217;s generally a good idea to use the <tt class="docutils literal"><span class="pre">koi</span></tt> property to access the
+catalog values.</p>
+<dl class="method">
+<dt id="kplr.Planet.get_light_curves">
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Planet.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of light curve datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.Planet.get_target_pixel_files">
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Planet.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of target pixel datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.Planet.koi">
+<tt class="descname">koi</tt><a class="headerlink" href="#kplr.Planet.koi" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#kplr.KOI" title="kplr.KOI"><tt class="xref py py-class docutils literal"><span class="pre">KOI</span></tt></a> entry that led to this planet. The KOI table is much
+more complete so the use of this object tends to be preferred over the
+built in <a class="reference internal" href="#kplr.Planet" title="kplr.Planet"><tt class="xref py py-class docutils literal"><span class="pre">Planet</span></tt></a> property values.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.Planet.star">
+<tt class="descname">star</tt><a class="headerlink" href="#kplr.Planet.star" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#kplr.Star" title="kplr.Star"><tt class="xref py py-class docutils literal"><span class="pre">Star</span></tt></a> entry from the Kepler Input Catalog associated with
+this object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="kepler-input-catalog-targets">
+<h2>Kepler Input Catalog Targets<a class="headerlink" href="#kepler-input-catalog-targets" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kplr.Star">
+<em class="property">class </em><tt class="descclassname">kplr.</tt><tt class="descname">Star</tt><big>(</big><em>*args</em>, <em>**params</em><big>)</big><a class="headerlink" href="#kplr.Star" title="Permalink to this definition">¶</a></dt>
+<dd><p>A star from the <a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kic10">Kepler Input Catalog (KIC)</a>.</p>
+<dl class="method">
+<dt id="kplr.Star.get_light_curves">
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Star.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of light curve datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.Star.get_target_pixel_files">
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Star.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of target pixel datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.Star.kois">
+<tt class="descname">kois</tt><a class="headerlink" href="#kplr.Star.kois" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of <a class="reference internal" href="#kplr.KOI" title="kplr.KOI"><tt class="xref py py-class docutils literal"><span class="pre">KOI</span></tt></a> entries found in this star&#8217;s light curve.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="datasets">
+<h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="kplr.LightCurve">
+<em class="property">class </em><tt class="descclassname">kplr.</tt><tt class="descname">LightCurve</tt><big>(</big><em>*args</em>, <em>**params</em><big>)</big><a class="headerlink" href="#kplr.LightCurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to a light curve dataset on the MAST severs. This object
+handles local caching of the file in a strict directory structure.</p>
+<dl class="method">
+<dt id="kplr.LightCurve.fetch">
+<tt class="descname">fetch</tt><big>(</big><em>clobber=False</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download the data file from the server and save it locally. The local
+file will be saved in the directory specified by the <tt class="docutils literal"><span class="pre">data_root</span></tt>
+property of the API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>clobber</strong> &#8211; Should an existing local file be overwritten? (default: False)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.LightCurve.filename">
+<tt class="descname">filename</tt><a class="headerlink" href="#kplr.LightCurve.filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>The local filename of the data file. This file is only guaranteed to
+exist after <tt class="docutils literal"><span class="pre">fetch()</span></tt> has been called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.LightCurve.get_light_curves">
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of light curve datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.LightCurve.get_target_pixel_files">
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of target pixel datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.LightCurve.url">
+<tt class="descname">url</tt><a class="headerlink" href="#kplr.LightCurve.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>The remote URL for the data file on the MAST servers.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="kplr.TargetPixelFile">
+<em class="property">class </em><tt class="descclassname">kplr.</tt><tt class="descname">TargetPixelFile</tt><big>(</big><em>*args</em>, <em>**params</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to a target pixel dataset on the MAST severs. Like the
+<a class="reference internal" href="#kplr.LightCurve" title="kplr.LightCurve"><tt class="xref py py-class docutils literal"><span class="pre">LightCurve</span></tt></a> object, this object handles local caching of the file
+in a strict directory structure.</p>
+<dl class="method">
+<dt id="kplr.TargetPixelFile.fetch">
+<tt class="descname">fetch</tt><big>(</big><em>clobber=False</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download the data file from the server and save it locally. The local
+file will be saved in the directory specified by the <tt class="docutils literal"><span class="pre">data_root</span></tt>
+property of the API.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>clobber</strong> &#8211; Should an existing local file be overwritten? (default: False)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.TargetPixelFile.filename">
+<tt class="descname">filename</tt><a class="headerlink" href="#kplr.TargetPixelFile.filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>The local filename of the data file. This file is only guaranteed to
+exist after <tt class="docutils literal"><span class="pre">fetch()</span></tt> has been called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.TargetPixelFile.get_light_curves">
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of light curve datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.TargetPixelFile.get_target_pixel_files">
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of target pixel datasets for the model and optionally
+download the FITS files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>short_cadence</strong> &#8211; A boolean flag that determines whether or not the short cadence
+data should be included. (default: True)</li>
+<li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
+be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="kplr.TargetPixelFile.url">
+<tt class="descname">url</tt><a class="headerlink" href="#kplr.TargetPixelFile.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>The remote URL for the data file on the MAST servers.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><div class="related">
+    <div class="previous">
+        <a href="../" title="previous chapter">&laquo; A Python interface to the Kepler data</a>
+    </div>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="container">
+        <div id="footer">
+            Copyright 2013 <a href="http://dan.iel.fm">Dan Foreman-Mackey</a>.
+            Released under the MIT License.<br>
+            This documentation was lovingly built using
+            <a href="http://sphinx-doc.org/">Sphinx</a>.
+        </div>
+
+        <a href="https://github.com/dfm/kplr" class="github">
+            <img style="position: absolute; top: 0; right: 0; border: 0;"
+                src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"
+                alt="Fork me on GitHub" class="github"/>
+        </a>
+
+        
+        <script type="text/javascript">
+
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', '']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+
+        </script>
+        
+    </div>
+  </body>
+</html>

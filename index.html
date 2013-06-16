@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+<title>kplr—A Python interface to the Kepler data</title>
+
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="kplr 0.1.0 documentation" href="#" />
+    <link rel="next" title="Python Interface" href="api/" />
+
+     
+
+    <link rel="shortcut icon" href="_static/favicon.png">
+    <link rel="stylesheet" href="_static/kplr.css" type="text/css" />
+
+
+  </head>
+  <body>  
+
+    <div class="document">
+
+    <div class="container">
+
+        <div class="title">
+            <a href="#">kplr</a>
+        </div>
+        <div class="subtitle">A Python interface to the Kepler data</div>
+
+
+        
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-kplr"></span><div class="section" id="a-python-interface-to-the-kepler-data">
+<h1>A Python interface to the Kepler data<a class="headerlink" href="#a-python-interface-to-the-kepler-data" title="Permalink to this headline">¶</a></h1>
+<p>If you&#8217;re here, then you probably already know about the <a class="reference external" href="http://kepler.nasa.gov/">Kepler mission</a>. You probably also know that it can be a bit of a
+pain to get access to this public dataset. As I understand things, the
+canonical source for a catalog of planet candidates—or more precisely Kepler
+Objects of Interest (KOIs)—is the <a class="reference external" href="http://exoplanetarchive.ipac.caltech.edu/">NASA Exoplanet Archive</a> but the data is available
+through <a class="reference external" href="http://archive.stsci.edu/">MAST</a>. There are programmatic interfaces
+(APIs) available for both of these services but it can still be frustrating to
+interact with them in an automated way. That&#8217;s why I made <strong>kplr</strong>.</p>
+<p><strong>kplr</strong> provides a lightweight Pythonic interface to the catalogs and data.
+Below, I&#8217;ll describe the features provided by kplr but to get things
+started, let&#8217;s see an example of how you would go about finding the published
+parameters of a KOI and download the light curve data.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">kplr</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">kplr</span><span class="o">.</span><span class="n">API</span><span class="p">()</span>
+
+<span class="c"># Find a KOI.</span>
+<span class="n">koi</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">koi</span><span class="p">(</span><span class="mf">952.01</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">koi</span><span class="o">.</span><span class="n">koi_period</span><span class="p">)</span>
+
+<span class="c"># This KOI has an associated star.</span>
+<span class="n">star</span> <span class="o">=</span> <span class="n">koi</span><span class="o">.</span><span class="n">star</span>
+<span class="k">print</span><span class="p">(</span><span class="n">star</span><span class="o">.</span><span class="n">kic_teff</span><span class="p">)</span>
+
+<span class="c"># Download the lightcurves for this KOI.</span>
+<span class="n">lightcurves</span> <span class="o">=</span> <span class="n">koi</span><span class="o">.</span><span class="n">get_light_curves</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">lc</span> <span class="ow">in</span> <span class="n">lightcurves</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">lc</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><a class="reference internal" href="#installation">Installation</a></p>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#api-interface">API Interface</a></dt>
+<dd><ul class="first last simple">
+<li><a class="reference internal" href="#kepler-objects-of-interest">Kepler Objects of Interest</a></li>
+<li><a class="reference internal" href="#confirmed-planets">Confirmed Planets</a></li>
+<li><a class="reference internal" href="#kepler-input-catalog-targets">Kepler Input Catalog Targets</a></li>
+<li><a class="reference internal" href="#datasets">Datasets</a></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first"><a href="#id1"><span class="problematic" id="id2">`Data Access`_</span></a></p>
+</li>
+</ul>
+<p>For a detailed description of the</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/">Python Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/#kepler-objects-of-interest">Kepler Objects of Interest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/#confirmed-planets">Confirmed Planets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/#kepler-input-catalog-targets">Kepler Input Catalog Targets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/#datasets">Datasets</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>You can install kplr using the standard Python packaging tool <a class="reference external" href="http://www.pip-installer.org/">pip</a>:</p>
+<div class="highlight-bash"><div class="highlight"><pre>pip install kplr
+</pre></div>
+</div>
+<p>or (if you must) <a class="reference external" href="https://pypi.python.org/pypi/setuptools">easy_install</a>:</p>
+<div class="highlight-bash"><div class="highlight"><pre>easy_install kplr
+</pre></div>
+</div>
+<p>The development version can be installed using pip:</p>
+<div class="highlight-bash"><div class="highlight"><pre>pip install -e git+https://github.com/dfm/kplr#egg<span class="o">=</span>kplr-dev
+</pre></div>
+</div>
+<p>or by cloning the <a class="reference external" href="https://github.com/dfm/kplr">GitHub repository</a>:</p>
+<div class="highlight-bash"><div class="highlight"><pre>git clone https://github.com/dfm/kplr.git
+<span class="nb">cd </span>kplr
+python setup.py install
+</pre></div>
+</div>
+</div>
+<div class="section" id="api-interface">
+<h2>API Interface<a class="headerlink" href="#api-interface" title="Permalink to this headline">¶</a></h2>
+<p>The basic work flow for interacting with the APIs starts by initializing an
+<a class="reference internal" href="api/#kplr.API" title="kplr.API"><tt class="xref py py-class docutils literal"><span class="pre">API</span></tt></a> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">kplr</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">kplr</span><span class="o">.</span><span class="n">API</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Then, this object provides methods for constructing various queries to find</p>
+<ul class="simple">
+<li><a class="reference internal" href="#kepler-objects-of-interest">Kepler objects of interest</a>,</li>
+<li><a class="reference internal" href="#confirmed-planets">confirmed planets</a>,</li>
+<li><a class="reference internal" href="#kepler-input-catalog-targets">Kepler input catalog targets</a>, and</li>
+<li><a class="reference internal" href="#datasets">datasets</a>.</li>
+</ul>
+<div class="section" id="kepler-objects-of-interest">
+<h3>Kepler Objects of Interest<a class="headerlink" href="#kepler-objects-of-interest" title="Permalink to this headline">¶</a></h3>
+<p>The kplr KOI search interfaces with <a class="reference external" href="http://exoplanetarchive.ipac.caltech.edu/docs/program_interfaces.html">The Exoplanet Archive API</a> to
+return the most up to date information possible. In particular, it searches
+the <a class="reference external" href="http://exoplanetarchive.ipac.caltech.edu/docs/API_kepcandidate_columns.html">cumulative table</a>.
+As shown in the sample code at the top of this page, it is very easy to
+retrieve the listing for a single <a class="reference internal" href="api/#kplr.KOI" title="kplr.KOI"><tt class="xref py py-class docutils literal"><span class="pre">KOI</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">koi</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">koi</span><span class="p">(</span><span class="mf">952.01</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note the <tt class="docutils literal"><span class="pre">.01</span></tt> in the KOI ID. This is required because a KOI is specified by
+the full number (not just <tt class="docutils literal"><span class="pre">952</span></tt> which will fail).
+The object will have an attribute for each column listed in the <a class="reference external" href="http://exoplanetarchive.ipac.caltech.edu/docs/API_kepcandidate_columns.html">Exoplanet
+Archive documentation</a>.
+For example, the period and error bars (positive and negative respectively)
+are given by</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">koi</span><span class="o">.</span><span class="n">koi_period</span><span class="p">,</span> <span class="n">koi</span><span class="o">.</span><span class="n">koi_period_err1</span><span class="p">,</span> <span class="n">koi</span><span class="o">.</span><span class="n">koi_period_err2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For KOI 952.01, this result will print <tt class="docutils literal"><span class="pre">5.901269,</span> <span class="pre">1.7e-05,</span> <span class="pre">-1.7e-05</span></tt>.</p>
+<p>Finding a set of KOIs that satisfy search criteria is a little more
+complicated because you must provide syntax that is understood by the
+Exoplanet Archive. For example, to find all the KOIs with period longer than
+200 days, you would run</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kois</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">kois</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="s">&quot;koi_period&gt;200&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>At the time of writing, this should return 224 <a class="reference internal" href="api/#kplr.KOI" title="kplr.KOI"><tt class="xref py py-class docutils literal"><span class="pre">KOI</span></tt></a> objects.</p>
+</div>
+<div class="section" id="confirmed-planets">
+<h3>Confirmed Planets<a class="headerlink" href="#confirmed-planets" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="kepler-input-catalog-targets">
+<h3>Kepler Input Catalog Targets<a class="headerlink" href="#kepler-input-catalog-targets" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="datasets">
+<h3>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><div class="related">
+    <div class="next">
+        <a href="api/" title="next chapter">Python Interface &raquo;</a>
+    </div>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="container">
+        <div id="footer">
+            Copyright 2013 <a href="http://dan.iel.fm">Dan Foreman-Mackey</a>.
+            Released under the MIT License.<br>
+            This documentation was lovingly built using
+            <a href="http://sphinx-doc.org/">Sphinx</a>.
+        </div>
+
+        <a href="https://github.com/dfm/kplr" class="github">
+            <img style="position: absolute; top: 0; right: 0; border: 0;"
+                src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"
+                alt="Fork me on GitHub" class="github"/>
+        </a>
+
+        
+        <script type="text/javascript">
+
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', '']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+
+        </script>
+        
+    </div>
+  </body>
+</html>
