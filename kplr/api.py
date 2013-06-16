@@ -37,6 +37,15 @@ class API(object):
         if data_root is None:
             self.data_root = KPLR_ROOT
 
+    def __str__(self):
+        return "<API(data_root=\"{0}\")>".format(self.data_root)
+
+    def __unicode__(self):
+        return self.__str__()
+
+    def __repr__(self):
+        return self.__str__()
+
     def ea_request(self, table, **params):
         """
         Submit a request to the Exoplanet Archive API and return a dictionary.
@@ -356,9 +365,7 @@ class Model(object):
         return self.__str__()
 
     def __repr__(self):
-        return "<{0}({1}, {2})>".format(self.__class__.__name__,
-                                        repr(self.api),
-                                        json.dumps(self.params))
+        return self.__str__()
 
     def get_light_curves(self, short_cadence=True, fetch=True):
         """

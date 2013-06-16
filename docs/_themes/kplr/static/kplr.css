@@ -1,0 +1,103 @@
+@import url("normalize.css");
+@import url(http://fonts.googleapis.com/css?family=Libre+Baskerville:400,700,400italic);
+@import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700);
+
+body {
+    font-family: 'Libre Baskerville', serif;
+    line-height: 2.1em;
+    color: #222;
+    background: #e5e8e8;
+    font-size: 14pt;
+}
+
+a {
+    color: steelblue;
+    text-decoration: none;
+}
+
+a:hover {
+    color: rgb(60, 160, 243);
+}
+
+.container {
+    width: 800px;
+    margin-left: 100px;
+    margin-top: 100px;
+}
+
+.title {
+    font-size: 36pt;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 21pt;
+    font-weight: normal;
+    line-height: 1;
+    color: #666;
+    padding-bottom: 30px;
+    margin-bottom: 50px;
+    border-bottom: 1px solid #888;
+}
+
+#footer {
+    margin-top: 50px;
+    font-size: 10pt;
+    font-style: italic;
+    line-height: 2;
+}
+
+h1 {
+    display: none;
+}
+
+h2 {
+    font-size: 21pt;
+    color: #444;
+    padding: 50px 0 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Invisibles */
+.headerlink {
+    font-size: 0.7em;
+    float: left;
+    position: relative;
+    width: 30px;
+    margin-left: -30px;
+    color: #bbb;
+}
+
+/* Code */
+
+code, pre {
+    font-family: "Ubuntu Mono", monospace;
+    font-size: 14pt;
+}
+
+.highlight {
+    background: #ddd;
+    padding: 10px;
+    white-space: nowrap;
+    overflow-x: auto;
+    line-height: 1;
+}
+
+.highlight pre, .highlight code {
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+@media all and (max-width: 1000px) {
+    .container {
+        width: auto;
+        margin: 100px 10%;
+        padding: 0;
+    }
+
+    .headerlink {
+        display: none;
+    }
+}
