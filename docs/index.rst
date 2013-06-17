@@ -48,7 +48,8 @@ Table of Contents
     * `Datasets`_
 * `Data Access`_
 
-For a detailed description of the
+For a detailed description of the Python bindings see the Python API
+documentation:
 
 .. toctree::
    :maxdepth: 2
