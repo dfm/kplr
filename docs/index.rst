@@ -144,11 +144,74 @@ Exoplanet Archive. For example, to find all the KOIs with period longer than
 
     kois = client.kois(where="koi_period>200")
 
-At the time of writing, this should return 224 :class:`KOI` objects.
+At the time of writing, this should return 224 :class:`KOI` objects. If you
+then wanted to sort by period, you could include the ``sort`` keyword
+argument:
+
+.. code-block:: python
+
+    kois = client.kois(where="koi_period>200", sort="koi_period")
+
+or, equivalently,
+
+.. code-block:: python
+
+    kois = client.kois(where="koi_period>200", sort=("koi_period", 1))
+
+You can specify the sort order to be descending by using
+
+.. code-block:: python
+
+    kois = client.kois(where="koi_period>200", sort=("koi_period", -1))
+
 
 Confirmed Planets
 ^^^^^^^^^^^^^^^^^
 
+The confirmed planet interface queries the `confirmed planets
+<http://archive.stsci.edu/search_fields.php?mission=kepler_cp>`_ table using
+the `MAST API <http://archive.stsci.edu/vo/mast_services.html>`_. To find a
+specific planet using this interface, you can use the :func:`API.planet`
+function
+
+.. code-block:: python
+
+    planet = client.planet("32b")
+
+or equivalently
+
+.. code-block:: python
+
+    planet = client.planet("Kepler-32b")
+
+This object has attributes for each column given in the `table in the MAST
+documentation
+<http://archive.stsci.edu/search_fields.php?mission=kepler_cp>`_. For example,
+the corresponding KOI name for this planet is given by
+
+.. code-block:: python
+
+    print(planet.kepoi_name)
+
+In this case, you should see ``952.01``.
+
+The query syntax on MAST is a little different than on the Exoplanet Archive.
+For example, to find planets with estimated radii less than 2 Earth radii,
+you would run
+
+.. code-block:: python
+
+    planets = client.planets(koi_prad="<2")
+
+where ``koi_prad`` is the name of a column in the `MAST documentation table
+<http://archive.stsci.edu/search_fields.php?mission=kepler_cp>`_.
+
+The syntax for sorting the results is the same as described above for the
+KOIs. To sort the above search by period, you would run
+
+.. code-block:: python
+
+    planets = client.planets(koi_prad="<2", sort="koi_period")
 
 
 Kepler Input Catalog Targets
@@ -160,3 +223,5 @@ Datasets
 ^^^^^^^^
 
 
+Data Access
+-----------
