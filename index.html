@@ -92,7 +92,6 @@ parameters of a KOI and download the light curve data.</p>
 <li><a class="reference internal" href="#kepler-objects-of-interest">Kepler Objects of Interest</a></li>
 <li><a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">Confirmed Planets</a></li>
 <li><a class="reference internal" href="#kepler-input-catalog-targets">Kepler Input Catalog Targets</a></li>
-<li><a class="reference internal" href="#datasets">Datasets</a></li>
 </ul>
 </dd>
 </dl>
@@ -146,9 +145,8 @@ python setup.py install
 <p>Then, this object provides methods for constructing various queries to find</p>
 <ul class="simple">
 <li><a class="reference internal" href="#kepler-objects-of-interest">Kepler objects of interest</a>,</li>
-<li><a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">confirmed planets</a>,</li>
-<li><a class="reference internal" href="#kepler-input-catalog-targets">Kepler input catalog targets</a>, and</li>
-<li><a class="reference internal" href="#datasets">datasets</a>.</li>
+<li><a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">confirmed planets</a>, and</li>
+<li><a class="reference internal" href="#kepler-input-catalog-targets">Kepler input catalog targets</a>.</li>
 </ul>
 <div class="section" id="kepler-objects-of-interest">
 <h3>Kepler Objects of Interest<a class="headerlink" href="#kepler-objects-of-interest" title="Permalink to this headline">¶</a></h3>
@@ -238,8 +236,8 @@ For example, a particular star can be found as follows</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">stars</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">stars</span><span class="p">(</span><span class="n">kic_teff</span><span class="o">=</span><span class="s">&quot;5700..5800&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>To select a set of stars in a 2MASS color range with estimated temperatures,
-you would run something like:</p>
+<p>To select a set of stars in a 2MASS color range with (non-NULL) estimated
+temperatures, you would run something like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">stars</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">stars</span><span class="p">(</span><span class="n">kic_jkcolor</span><span class="o">=</span><span class="s">&quot;0.3..0.4&quot;</span><span class="p">,</span> <span class="n">kic_teff</span><span class="o">=</span><span class="s">&quot;!</span><span class="se">\\</span><span class="s">null&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -250,12 +248,55 @@ change this behavior, you can specify the</em> <tt class="docutils literal"><spa
 </pre></div>
 </div>
 </div>
-<div class="section" id="datasets">
-<h3>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h3>
-</div>
 </div>
 <div class="section" id="data-access">
 <h2>Data Access<a class="headerlink" href="#data-access" title="Permalink to this headline">¶</a></h2>
+<p><em>Note: to interact with the Kepler data, you will need to be able to read the
+FITS files. kplr automatically supports loading the data using</em> <a class="reference external" href="http://pythonhosted.org/pyfits/">pyfits</a> <em>so it&#8217;s probably easiest to make sure
+that you have that installed before trying the examples in this section.</em></p>
+<p>The MAST servers are the main source for the Kepler data products. kplr
+supports two types of data: light curves and target pixel files. These
+products are described in detail in the <a class="reference external" href="http://archive.stsci.edu/kepler/manuals/archive_manual.pdf">Kepler Archive Manual</a> but in summary:</p>
+<ul class="simple">
+<li>the target pixel files contain the lightly-processed CCD readouts from small
+fields around the telemetered Kepler targets, and</li>
+<li>the light curve files contain the results of the aperture photometric
+pipeline applied to the pixel files and various housekeeping columns.</li>
+</ul>
+<p>All of the objects described above (<a class="reference internal" href="api/#kplr.KOI" title="kplr.KOI"><tt class="xref py py-class docutils literal"><span class="pre">KOI</span></tt></a>, <a class="reference internal" href="api/#kplr.Planet" title="kplr.Planet"><tt class="xref py py-class docutils literal"><span class="pre">Planet</span></tt></a> and
+<a class="reference internal" href="api/#kplr.Star" title="kplr.Star"><tt class="xref py py-class docutils literal"><span class="pre">Star</span></tt></a>) have a <tt class="xref py py-func docutils literal"><span class="pre">get_light_curves()</span></tt> method and a
+<tt class="xref py py-func docutils literal"><span class="pre">get_target_pixel_files()</span></tt> method. These methods return (possibly empty)
+lists of <a class="reference internal" href="api/#kplr.LightCurve" title="kplr.LightCurve"><tt class="xref py py-class docutils literal"><span class="pre">LightCurve</span></tt></a> and <a class="reference internal" href="api/#kplr.TargetPixelFile" title="kplr.TargetPixelFile"><tt class="xref py py-class docutils literal"><span class="pre">TargetPixelFile</span></tt></a> objects,
+respectively. Both of the above methods take three keyword arguments:
+<tt class="docutils literal"><span class="pre">short_cadence</span></tt>, <tt class="docutils literal"><span class="pre">fetch</span></tt> and <tt class="docutils literal"><span class="pre">clobber</span></tt>. <tt class="docutils literal"><span class="pre">short_cadence</span></tt> defaults to
+<tt class="docutils literal"><span class="pre">True</span></tt> and it decides whether or not the &#8220;short cadence&#8221; data should be
+included. If it is <tt class="docutils literal"><span class="pre">False</span></tt>, only the &#8220;long cadence&#8221; data are returned. If
+<tt class="docutils literal"><span class="pre">fetch</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt>, the data are automatically downloaded from the MAST
+server if they don&#8217;t already exist locally. Otherwise, if <tt class="docutils literal"><span class="pre">fetch</span></tt> is
+<tt class="docutils literal"><span class="pre">False</span></tt> (default) the data aren&#8217;t downloaded until the first time they are
+opened. Finally, <tt class="docutils literal"><span class="pre">clobber</span></tt> sets the behavior when a local copy of the file
+already exists. If a data file has been corrupted, it can be useful to set
+<tt class="docutils literal"><span class="pre">clobber=True</span></tt> to make sure that the bad file is overwritten.</p>
+<p>Below is an example for the best practice for loading a set of light curves
+for a particular object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Find the target KOI.</span>
+<span class="n">koi</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">koi</span><span class="p">(</span><span class="mf">952.01</span><span class="p">)</span>
+
+<span class="c"># Get a list of light curve datasets.</span>
+<span class="n">lcs</span> <span class="o">=</span> <span class="n">koi</span><span class="o">.</span><span class="n">get_light_curves</span><span class="p">(</span><span class="n">short_cadence</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># Loop over the datasets and read in the data.</span>
+<span class="n">time</span><span class="p">,</span> <span class="n">flux</span><span class="p">,</span> <span class="n">ferr</span><span class="p">,</span> <span class="n">quality</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">lc</span> <span class="ow">in</span> <span class="n">lcs</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">lc</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="c"># The lightcurve data are in the first FITS HDU.</span>
+        <span class="n">hdu_data</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdu_data</span><span class="p">[</span><span class="s">&quot;time&quot;</span><span class="p">])</span>
+        <span class="n">flux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdu_data</span><span class="p">[</span><span class="s">&quot;sap_flux&quot;</span><span class="p">])</span>
+        <span class="n">ferr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdu_data</span><span class="p">[</span><span class="s">&quot;sap_flux_err&quot;</span><span class="p">])</span>
+        <span class="n">quality</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hdu_data</span><span class="p">[</span><span class="s">&quot;sap_quality&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
 </div>
 </div>
 
