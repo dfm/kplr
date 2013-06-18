@@ -217,6 +217,35 @@ KOIs. To sort the above search by period, you would run
 Kepler Input Catalog Targets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Access to the Kepler Input Catalog (KIC) is also provided by the `MAST API's
+kic10 table <http://archive.stsci.edu/search_fields.php?mission=kic10>`_. It
+can, therefore, be queried using syntax similar to the confirmed planet table.
+For example, a particular star can be found as follows
+
+.. code-block:: python
+
+    star = client.star(9787239)
+
+Similarly, a query can be run on the table using the following syntax:
+
+.. code-block:: python
+
+    stars = client.stars(kic_teff="5700..5800")
+
+To select a set of stars in a 2MASS color range with estimated temperatures,
+you would run something like:
+
+.. code-block:: python
+
+    stars = client.stars(kic_jkcolor="0.3..0.4", kic_teff="!\\null")
+
+*Note: by default, the* :func:`API.stars` *endpoint is limited to 100 results
+because it's very easy to time out the MAST server if you're not careful. To
+change this behavior, you can specify the* ``max_records`` *keyword argument:*
+
+.. code-block:: python
+
+    stars = client.stars(kic_jkcolor="0.3..0.4", kic_teff="!\\null", max_records=500)
 
 
 Datasets
