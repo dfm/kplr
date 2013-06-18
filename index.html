@@ -90,17 +90,18 @@ parameters of a KOI and download the light curve data.</p>
 <dt><a class="reference internal" href="#api-interface">API Interface</a></dt>
 <dd><ul class="first last simple">
 <li><a class="reference internal" href="#kepler-objects-of-interest">Kepler Objects of Interest</a></li>
-<li><a class="reference internal" href="#confirmed-planets">Confirmed Planets</a></li>
+<li><a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">Confirmed Planets</a></li>
 <li><a class="reference internal" href="#kepler-input-catalog-targets">Kepler Input Catalog Targets</a></li>
 <li><a class="reference internal" href="#datasets">Datasets</a></li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><p class="first"><a href="#id1"><span class="problematic" id="id2">`Data Access`_</span></a></p>
+<li><p class="first"><a class="reference internal" href="#data-access">Data Access</a></p>
 </li>
 </ul>
-<p>For a detailed description of the</p>
+<p>For a detailed description of the Python bindings see the Python API
+documentation:</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/">Python Interface</a><ul>
@@ -145,7 +146,7 @@ python setup.py install
 <p>Then, this object provides methods for constructing various queries to find</p>
 <ul class="simple">
 <li><a class="reference internal" href="#kepler-objects-of-interest">Kepler objects of interest</a>,</li>
-<li><a class="reference internal" href="#confirmed-planets">confirmed planets</a>,</li>
+<li><a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">confirmed planets</a>,</li>
 <li><a class="reference internal" href="#kepler-input-catalog-targets">Kepler input catalog targets</a>, and</li>
 <li><a class="reference internal" href="#datasets">datasets</a>.</li>
 </ul>
@@ -176,17 +177,85 @@ Exoplanet Archive. For example, to find all the KOIs with period longer than
 <div class="highlight-python"><div class="highlight"><pre><span class="n">kois</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">kois</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="s">&quot;koi_period&gt;200&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>At the time of writing, this should return 224 <a class="reference internal" href="api/#kplr.KOI" title="kplr.KOI"><tt class="xref py py-class docutils literal"><span class="pre">KOI</span></tt></a> objects.</p>
+<p>At the time of writing, this should return 224 <a class="reference internal" href="api/#kplr.KOI" title="kplr.KOI"><tt class="xref py py-class docutils literal"><span class="pre">KOI</span></tt></a> objects. If you
+then wanted to sort by period, you could include the <tt class="docutils literal"><span class="pre">sort</span></tt> keyword
+argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kois</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">kois</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="s">&quot;koi_period&gt;200&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s">&quot;koi_period&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or, equivalently,</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kois</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">kois</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="s">&quot;koi_period&gt;200&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;koi_period&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>You can specify the sort order to be descending by using</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">kois</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">kois</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="s">&quot;koi_period&gt;200&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;koi_period&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="confirmed-planets">
 <h3>Confirmed Planets<a class="headerlink" href="#confirmed-planets" title="Permalink to this headline">¶</a></h3>
+<p>The confirmed planet interface queries the <a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">confirmed planets</a> table using
+the <a class="reference external" href="http://archive.stsci.edu/vo/mast_services.html">MAST API</a>. To find a
+specific planet using this interface, you can use the <a class="reference internal" href="api/#kplr.API.planet" title="kplr.API.planet"><tt class="xref py py-func docutils literal"><span class="pre">API.planet()</span></tt></a>
+function</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">planet</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">planet</span><span class="p">(</span><span class="s">&quot;32b&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or equivalently</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">planet</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">planet</span><span class="p">(</span><span class="s">&quot;Kepler-32b&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This object has attributes for each column given in the <a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">table in the MAST
+documentation</a>. For example,
+the corresponding KOI name for this planet is given by</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">planet</span><span class="o">.</span><span class="n">kepoi_name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, you should see <tt class="docutils literal"><span class="pre">952.01</span></tt>.</p>
+<p>The query syntax on MAST is a little different than on the Exoplanet Archive.
+For example, to find planets with estimated radii less than 2 Earth radii,
+you would run</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">planets</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">planets</span><span class="p">(</span><span class="n">koi_prad</span><span class="o">=</span><span class="s">&quot;&lt;2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">koi_prad</span></tt> is the name of a column in the <a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kepler_cp">MAST documentation table</a>.</p>
+<p>The syntax for sorting the results is the same as described above for the
+KOIs. To sort the above search by period, you would run</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">planets</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">planets</span><span class="p">(</span><span class="n">koi_prad</span><span class="o">=</span><span class="s">&quot;&lt;2&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s">&quot;koi_period&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="kepler-input-catalog-targets">
 <h3>Kepler Input Catalog Targets<a class="headerlink" href="#kepler-input-catalog-targets" title="Permalink to this headline">¶</a></h3>
+<p>Access to the Kepler Input Catalog (KIC) is also provided by the <a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kic10">MAST API&#8217;s
+kic10 table</a>. It
+can, therefore, be queried using syntax similar to the confirmed planet table.
+For example, a particular star can be found as follows</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">star</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">star</span><span class="p">(</span><span class="mi">9787239</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Similarly, a query can be run on the table using the following syntax:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">stars</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">stars</span><span class="p">(</span><span class="n">kic_teff</span><span class="o">=</span><span class="s">&quot;5700..5800&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To select a set of stars in a 2MASS color range with estimated temperatures,
+you would run something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">stars</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">stars</span><span class="p">(</span><span class="n">kic_jkcolor</span><span class="o">=</span><span class="s">&quot;0.3..0.4&quot;</span><span class="p">,</span> <span class="n">kic_teff</span><span class="o">=</span><span class="s">&quot;!</span><span class="se">\\</span><span class="s">null&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><em>Note: by default, the</em> <a class="reference internal" href="api/#kplr.API.stars" title="kplr.API.stars"><tt class="xref py py-func docutils literal"><span class="pre">API.stars()</span></tt></a> <em>endpoint is limited to 100 results
+because it&#8217;s very easy to time out the MAST server if you&#8217;re not careful. To
+change this behavior, you can specify the</em> <tt class="docutils literal"><span class="pre">max_records</span></tt> <em>keyword argument:</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">stars</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">stars</span><span class="p">(</span><span class="n">kic_jkcolor</span><span class="o">=</span><span class="s">&quot;0.3..0.4&quot;</span><span class="p">,</span> <span class="n">kic_teff</span><span class="o">=</span><span class="s">&quot;!</span><span class="se">\\</span><span class="s">null&quot;</span><span class="p">,</span> <span class="n">max_records</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="datasets">
 <h3>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h3>
 </div>
+</div>
+<div class="section" id="data-access">
+<h2>Data Access<a class="headerlink" href="#data-access" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 

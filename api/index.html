@@ -119,7 +119,7 @@ default value is <tt class="docutils literal"><span class="pre">~/.kplr</span></
 
 <dl class="method">
 <dt id="kplr.API.light_curves">
-<tt class="descname">light_curves</tt><big>(</big><em>kepler_id</em>, <em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.API.light_curves" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">light_curves</tt><big>(</big><em>kepler_id</em>, <em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.API.light_curves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the set of light curves associated with a KIC target.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -218,7 +218,7 @@ default.</p>
 
 <dl class="method">
 <dt id="kplr.API.target_pixel_files">
-<tt class="descname">target_pixel_files</tt><big>(</big><em>kepler_id</em>, <em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.API.target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">target_pixel_files</tt><big>(</big><em>kepler_id</em>, <em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.API.target_pixel_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the set of target pixel files associated with a KIC target.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -247,7 +247,7 @@ be downloaded.</li>
 <dd><p>A model specifying a Kepler Object of Interest (KOI).</p>
 <dl class="method">
 <dt id="kplr.KOI.get_light_curves">
-<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.KOI.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.KOI.get_light_curves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of light curve datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -268,7 +268,7 @@ be downloaded.</li>
 
 <dl class="method">
 <dt id="kplr.KOI.get_target_pixel_files">
-<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.KOI.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.KOI.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of target pixel datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -308,7 +308,7 @@ so it&#8217;s generally a good idea to use the <tt class="docutils literal"><spa
 catalog values.</p>
 <dl class="method">
 <dt id="kplr.Planet.get_light_curves">
-<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Planet.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.Planet.get_light_curves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of light curve datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -329,7 +329,7 @@ be downloaded.</li>
 
 <dl class="method">
 <dt id="kplr.Planet.get_target_pixel_files">
-<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Planet.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.Planet.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of target pixel datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -374,7 +374,7 @@ this object.</p>
 <dd><p>A star from the <a class="reference external" href="http://archive.stsci.edu/search_fields.php?mission=kic10">Kepler Input Catalog (KIC)</a>.</p>
 <dl class="method">
 <dt id="kplr.Star.get_light_curves">
-<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Star.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.Star.get_light_curves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of light curve datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -395,7 +395,7 @@ be downloaded.</li>
 
 <dl class="method">
 <dt id="kplr.Star.get_target_pixel_files">
-<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.Star.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.Star.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of target pixel datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -455,7 +455,7 @@ exist after <tt class="docutils literal"><span class="pre">fetch()</span></tt> h
 
 <dl class="method">
 <dt id="kplr.LightCurve.get_light_curves">
-<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.get_light_curves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of light curve datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -476,7 +476,7 @@ be downloaded.</li>
 
 <dl class="method">
 <dt id="kplr.LightCurve.get_target_pixel_files">
-<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of target pixel datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -488,6 +488,28 @@ download the FITS files.</p>
 data should be included. (default: True)</li>
 <li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
 be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.LightCurve.open">
+<tt class="descname">open</tt><big>(</big><em>clobber=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#kplr.LightCurve.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the FITS data file and return the <tt class="docutils literal"><span class="pre">pyfits.HDUList</span></tt>. This will
+download the file if it isn&#8217;t already saved locally.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>clobber</strong> &#8211; Overwrite the local file even if it exists? This can be helpful if
+the file gets corrupted somehow.</li>
+<li><strong>**kwargs</strong> &#8211; <p>Any keyword arguments that you would like to pass to the
+<tt class="xref py py-func docutils literal"><span class="pre">pyfits.open()</span></tt> function.</p>
+</li>
 </ul>
 </td>
 </tr>
@@ -534,7 +556,7 @@ exist after <tt class="docutils literal"><span class="pre">fetch()</span></tt> h
 
 <dl class="method">
 <dt id="kplr.TargetPixelFile.get_light_curves">
-<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.get_light_curves" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_light_curves</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.get_light_curves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of light curve datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -555,7 +577,7 @@ be downloaded.</li>
 
 <dl class="method">
 <dt id="kplr.TargetPixelFile.get_target_pixel_files">
-<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=True</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_target_pixel_files</tt><big>(</big><em>short_cadence=True</em>, <em>fetch=False</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.get_target_pixel_files" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of target pixel datasets for the model and optionally
 download the FITS files.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -567,6 +589,28 @@ download the FITS files.</p>
 data should be included. (default: True)</li>
 <li><strong>fetch</strong> &#8211; A boolean flag that determines whether or not the data file should
 be downloaded.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="kplr.TargetPixelFile.open">
+<tt class="descname">open</tt><big>(</big><em>clobber=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#kplr.TargetPixelFile.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the FITS data file and return the <tt class="docutils literal"><span class="pre">pyfits.HDUList</span></tt>. This will
+download the file if it isn&#8217;t already saved locally.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>clobber</strong> &#8211; Overwrite the local file even if it exists? This can be helpful if
+the file gets corrupted somehow.</li>
+<li><strong>**kwargs</strong> &#8211; <p>Any keyword arguments that you would like to pass to the
+<tt class="xref py py-func docutils literal"><span class="pre">pyfits.open()</span></tt> function.</p>
+</li>
 </ul>
 </td>
 </tr>
