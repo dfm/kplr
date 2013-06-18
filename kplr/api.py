@@ -14,6 +14,12 @@ import urllib
 import urllib2
 import logging
 
+try:
+    import pyfits
+    pyfits = pyfits
+except ImportError:
+    pyfits = None
+
 from .config import KPLR_ROOT
 from . import mast
 
@@ -130,7 +136,12 @@ class API(object):
             raise APIError(code, full_url, txt)
 
         # Parse the JSON.
-        result = json.loads(txt)
+        try:
+            result = json.loads(txt)
+        except ValueError:
+            full_url = handler.geturl() + "?" + urllib.urlencode(params)
+            raise APIError(code, full_url,
+                           "No JSON object could be decoded.\n" + txt)
 
         # Fake munge the types if no adapter was provided.
         if adapter is None:
@@ -280,7 +291,7 @@ class API(object):
                              .format(kepler_id))
         return data_list
 
-    def light_curves(self, kepler_id, short_cadence=True, fetch=True):
+    def light_curves(self, kepler_id, short_cadence=True, fetch=False):
         """
         Find the set of light curves associated with a KIC target.
 
@@ -302,7 +313,7 @@ class API(object):
             [l.fetch() for l in lcs]
         return lcs
 
-    def target_pixel_files(self, kepler_id, short_cadence=True, fetch=True):
+    def target_pixel_files(self, kepler_id, short_cadence=True, fetch=False):
         """
         Find the set of target pixel files associated with a KIC target.
 
@@ -384,7 +395,7 @@ class Model(object):
     def __repr__(self):
         return self.__str__()
 
-    def get_light_curves(self, short_cadence=True, fetch=True):
+    def get_light_curves(self, short_cadence=True, fetch=False):
         """
         Get a list of light curve datasets for the model and optionally
         download the FITS files.
@@ -400,7 +411,7 @@ class Model(object):
         """
         return self.api.light_curves(self.kepid, short_cadence=short_cadence)
 
-    def get_target_pixel_files(self, short_cadence=True, fetch=True):
+    def get_target_pixel_files(self, short_cadence=True, fetch=False):
         """
         Get a list of target pixel datasets for the model and optionally
         download the FITS files.
@@ -544,6 +555,31 @@ class _datafile(Model):
         """
         return self.base_url.format(self.product, self.kepid[:4],
                                     self.kepid, self._filename)
+
+    def open(self, clobber=False, **kwargs):
+        """
+        Open the FITS data file and return the ``pyfits.HDUList``. This will
+        download the file if it isn't already saved locally.
+
+        :param clobber:
+            Overwrite the local file even if it exists? This can be helpful if
+            the file gets corrupted somehow.
+
+        :param **kwargs:
+            Any keyword arguments that you would like to pass to the
+            :func:`pyfits.open` function.
+
+        """
+        if pyfits is None:
+            raise ImportError("The pyfits module is required to read data "
+                              "files.")
+
+        # Download the file if it's not already cached.
+        fn = self.filename
+        self.fetch(clobber=clobber)
+
+        # Load the pyfits file.
+        return pyfits.open(fn, **kwargs)
 
     def fetch(self, clobber=False):
         """
