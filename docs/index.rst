@@ -232,8 +232,8 @@ Similarly, a query can be run on the table using the following syntax:
 
     stars = client.stars(kic_teff="5700..5800")
 
-To select a set of stars in a 2MASS color range with estimated temperatures,
-you would run something like:
+To select a set of stars in a 2MASS color range with (non-NULL) estimated
+temperatures, you would run something like:
 
 .. code-block:: python
 
@@ -248,9 +248,58 @@ change this behavior, you can specify the* ``max_records`` *keyword argument:*
     stars = client.stars(kic_jkcolor="0.3..0.4", kic_teff="!\\null", max_records=500)
 
 
-Datasets
-^^^^^^^^
-
-
 Data Access
 -----------
+
+*Note: to interact with the Kepler data, you will need to be able to read the
+FITS files. kplr automatically supports loading the data using* `pyfits
+<http://pythonhosted.org/pyfits/>`_ *so it's probably easiest to make sure
+that you have that installed before trying the examples in this section.*
+
+The MAST servers are the main source for the Kepler data products. kplr
+supports two types of data: light curves and target pixel files. These
+products are described in detail in the `Kepler Archive Manual
+<http://archive.stsci.edu/kepler/manuals/archive_manual.pdf>`_ but in summary:
+
+* the target pixel files contain the lightly-processed CCD readouts from small
+  fields around the telemetered Kepler targets, and
+* the light curve files contain the results of the aperture photometric
+  pipeline applied to the pixel files and various housekeeping columns.
+
+All of the objects described above (:class:`KOI`, :class:`Planet` and
+:class:`Star`) have a :func:`get_light_curves` method and a
+:func:`get_target_pixel_files` method. These methods return (possibly empty)
+lists of :class:`LightCurve` and :class:`TargetPixelFile` objects,
+respectively. Both of the above methods take three keyword arguments:
+``short_cadence``, ``fetch`` and ``clobber``. ``short_cadence`` defaults to
+``True`` and it decides whether or not the "short cadence" data should be
+included. If it is ``False``, only the "long cadence" data are returned. If
+``fetch`` is ``True``, the data are automatically downloaded from the MAST
+server if they don't already exist locally. Otherwise, if ``fetch`` is
+``False`` (default) the data aren't downloaded until the first time they are
+opened. Finally, ``clobber`` sets the behavior when a local copy of the file
+already exists. If a data file has been corrupted, it can be useful to set
+``clobber=True`` to make sure that the bad file is overwritten.
+
+Below is an example for the best practice for loading a set of light curves
+for a particular object:
+
+.. code-block:: python
+
+    # Find the target KOI.
+    koi = client.koi(952.01)
+
+    # Get a list of light curve datasets.
+    lcs = koi.get_light_curves(short_cadence=False)
+
+    # Loop over the datasets and read in the data.
+    time, flux, ferr, quality = [], [], [], []
+    for lc in lcs:
+        with lc.open() as f:
+            # The lightcurve data are in the first FITS HDU.
+            hdu_data = f[1].data
+            time.append(hdu_data["time"])
+            flux.append(hdu_data["sap_flux"])
+            ferr.append(hdu_data["sap_flux_err"])
+            quality.append(hdu_data["sap_quality"])
+

@@ -291,7 +291,8 @@ class API(object):
                              .format(kepler_id))
         return data_list
 
-    def light_curves(self, kepler_id, short_cadence=True, fetch=False):
+    def light_curves(self, kepler_id, short_cadence=True, fetch=False,
+                     clobber=False):
         """
         Find the set of light curves associated with a KIC target.
 
@@ -306,14 +307,19 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be downloaded.
 
+        :param clobber:
+            A boolean flag that determines whether or not the data file should
+            be overwritten even if it already exists.
+
         """
         lcs = [LightCurve(self, d) for d in self._data_search(kepler_id,
                short_cadence=short_cadence)]
         if fetch:
-            [l.fetch() for l in lcs]
+            [l.fetch(clobber=clobber) for l in lcs]
         return lcs
 
-    def target_pixel_files(self, kepler_id, short_cadence=True, fetch=False):
+    def target_pixel_files(self, kepler_id, short_cadence=True, fetch=False,
+                           clobber=False):
         """
         Find the set of target pixel files associated with a KIC target.
 
@@ -328,11 +334,15 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be downloaded.
 
+        :param clobber:
+            A boolean flag that determines whether or not the data file should
+            be overwritten even if it already exists.
+
         """
         tpfs = [TargetPixelFile(self, d) for d in self._data_search(kepler_id,
                 short_cadence=short_cadence)]
         if fetch:
-            [l.fetch() for l in tpfs]
+            [l.fetch(clobber=clobber) for l in tpfs]
         return tpfs
 
 
@@ -395,7 +405,7 @@ class Model(object):
     def __repr__(self):
         return self.__str__()
 
-    def get_light_curves(self, short_cadence=True, fetch=False):
+    def get_light_curves(self, short_cadence=True, fetch=False, clobber=False):
         """
         Get a list of light curve datasets for the model and optionally
         download the FITS files.
@@ -408,10 +418,16 @@ class Model(object):
             A boolean flag that determines whether or not the data file should
             be downloaded.
 
-        """
-        return self.api.light_curves(self.kepid, short_cadence=short_cadence)
+        :param clobber:
+            A boolean flag that determines whether or not the data file should
+            be overwritten even if it already exists.
 
-    def get_target_pixel_files(self, short_cadence=True, fetch=False):
+        """
+        return self.api.light_curves(self.kepid, short_cadence=short_cadence,
+                                     clobber=clobber)
+
+    def get_target_pixel_files(self, short_cadence=True, fetch=False,
+                               clobber=False):
         """
         Get a list of target pixel datasets for the model and optionally
         download the FITS files.
@@ -424,9 +440,14 @@ class Model(object):
             A boolean flag that determines whether or not the data file should
             be downloaded.
 
+        :param clobber:
+            A boolean flag that determines whether or not the data file should
+            be overwritten even if it already exists.
+
         """
         return self.api.target_pixel_files(self.kepid,
-                                           short_cadence=short_cadence)
+                                           short_cadence=short_cadence,
+                                           clobber=clobber)
 
 
 class KOI(Model):
