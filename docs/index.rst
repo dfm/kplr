@@ -45,7 +45,6 @@ Table of Contents
     * `Kepler Objects of Interest`_
     * `Confirmed Planets`_
     * `Kepler Input Catalog Targets`_
-    * `Datasets`_
 * `Data Access`_
 
 For a detailed description of the Python bindings see the Python API
@@ -102,9 +101,8 @@ The basic work flow for interacting with the APIs starts by initializing an
 Then, this object provides methods for constructing various queries to find
 
 * `Kepler objects of interest`_,
-* `confirmed planets`_,
-* `Kepler input catalog targets`_, and
-* `datasets`_.
+* `confirmed planets`_, and
+* `Kepler input catalog targets`_.
 
 Kepler Objects of Interest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
