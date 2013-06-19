@@ -13,6 +13,7 @@ import types
 import urllib
 import urllib2
 import logging
+from tempfile import NamedTemporaryFile
 
 try:
     import pyfits
@@ -635,7 +636,16 @@ class _datafile(Model):
 
         # Save the contents of the file.
         logging.info("Saving file to: '{0}'".format(filename))
-        open(filename, "wb").write(handler.read())
+
+        # Atomically write to disk.
+        # http://stackoverflow.com/questions/2333872/ \
+        #        atomic-writing-to-file-with-python
+        f = NamedTemporaryFile("wb", delete=False)
+        f.write(handler.read())
+        f.flush()
+        os.fsync(f.fileno())
+        f.close()
+        os.rename(f.name, filename)
 
         return self
 
