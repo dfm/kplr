@@ -7,8 +7,10 @@ from __future__ import (division, print_function, absolute_import,
 __all__ = ["get_quad_coeffs", "LDCoeffAdaptor"]
 
 import os
-import requests
-import numpy as np
+import urllib
+import urllib2
+import logging
+from tempfile import NamedTemporaryFile
 
 from .config import KPLR_ROOT
 
@@ -133,3 +135,60 @@ class LDCoeffAdaptor(object):
             feh0 = self.feh[np.argmin(np.abs(self.feh - feh))]
             inds *= self.feh == feh0
         return np.mean(self.mu1[inds]), np.mean(self.mu2[inds])
+
+
+def download_database(data_root=None):
+    """
+    Download a SQLite database containing the limb darkening coefficients
+    computed by `Claret & Bloemen (2011)
+    <http://adsabs.harvard.edu/abs/2011A%26A...529A..75C>`_. The table is
+    available online on `Vizier
+    <http://vizier.cfa.harvard.edu/viz-bin/VizieR?-source=J/A+A/529/A75>`_.
+    Using the ASCII data table, the SQLite database was generated with the
+    following Python commands:
+
+    .. code-block:: python
+
+        import sqlite3
+        import numpy as np
+
+        with sqlite3.connect("ldcoeffs.db") as conn:
+            c = conn.cursor()
+            c.execute("CREATE TABLE IF NOT EXISTS claret11 "
+                    "(teff REAL, logg REAL, feh REAL, veloc REAL, mu1 REAL, "
+                    "mu2 REAL)")
+            data = np.loadtxt("claret11.txt", skiprows=59, delimiter="|",
+                            usecols=range(1, 7))
+            c.executemany("INSERT INTO claret11 (logg,teff,feh,veloc,mu1,mu2) "
+                        "VALUES (?,?,?,?,?,?)", data)
+
+    """
+    # Figure out the local filename for the database.
+    if data_root is None:
+        data_root = KPLR_ROOT
+    filename = os.path.join(data_root, "ldcoeffs.db")
+
+    # MAGIC: specify the URL for the remote file.
+    url = "http://bbq.dfm.io/~dfm/ldcoeffs.db"
+
+    # Fetch the database from the server.
+    logging.info("Downloading file from: '{0}'".format(url))
+    r = urllib2.Request(url)
+    handler = urllib2.urlopen(r)
+    code = handler.getcode()
+    if int(code) != 200:
+        raise RuntimeError("Couldn't download file from {0}. Returned: {1}"
+                           .format(url, code))
+
+    # Save the contents of the file.
+    logging.info("Saving file to: '{0}'".format(filename))
+
+    # Atomically write to disk.
+    # http://stackoverflow.com/questions/2333872/ \
+    #        atomic-writing-to-file-with-python
+    f = NamedTemporaryFile("wb", delete=False)
+    f.write(handler.read())
+    f.flush()
+    os.fsync(f.fileno())
+    f.close()
+    os.rename(f.name, filename)
