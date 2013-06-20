@@ -81,11 +81,12 @@ class LDCoeffAdaptor(object):
         """
         assert teff is not None
 
-        q = "SELECT mu1,mu2 FROM claret11 WHERE "
-        q += "teff=(SELECT teff FROM claret11 ORDER BY abs(teff-?) LIMIT 1) "
-        pars = [teff]
-        q += "ORDER BY (logg-?)*(logg-?)+(feh-?)*(feh-?) LIMIT 1"
-        pars += [logg, logg, feh, feh]
+        q = """
+        SELECT mu1,mu2 FROM claret11 WHERE
+        teff=(SELECT teff FROM claret11 ORDER BY abs(teff-?) LIMIT 1)
+        ORDER BY (logg-?) * (logg-?) + (feh-?) * (feh-?) LIMIT 1
+        """
+        pars = [teff, logg, logg, feh, feh]
 
         with sqlite3.connect(self.db_filename) as conn:
             c = conn.cursor()
