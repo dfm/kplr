@@ -4,7 +4,7 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["get_quad_coeffs", "LDCoeffAdaptor"]
+__all__ = ["get_quad_coeffs"]
 
 import os
 import sqlite3
@@ -17,7 +17,8 @@ from .config import KPLR_ROOT
 DB_FILENAME = "ldcoeffs.db"
 
 
-def get_quad_coeffs(teff=5778, logg=None, feh=None, data_root=None):
+def get_quad_coeffs(teff=5778, logg=None, feh=None, data_root=None,
+                    clobber=False):
     """
     Get the quadratic coefficients for the standard Kepler limb-darkening
     profile.
@@ -36,64 +37,31 @@ def get_quad_coeffs(teff=5778, logg=None, feh=None, data_root=None):
         can also be set using the ``KPLR_ROOT`` environment variable. The
         default value is ``~/.kplr``.
 
-    """
-    # Find the LD coefficients from the theoretical models.
-    a = LDCoeffAdaptor(data_root=data_root)
-    return a.get_coeffs(teff, logg=logg, feh=feh)
-
-
-class LDCoeffAdaptor(object):
-    """
-    Wrapper around the `Claret & Bloemen (2011)
-    <http://adsabs.harvard.edu/abs/2011A%26A...529A..75C>`_ values for limb
-    darkening coefficients. The data is stored in a SQLite database that will
-    be downloaded from the server if it isn't already stored locally.
-
-    :param data_root: (optional)
-        The local base directory where the grids will be downloaded to. This
-        can also be set using the ``KPLR_ROOT`` environment variable. The
-        default value is ``~/.kplr``.
-
     :param clobber: (optional)
-        Should the database file be overwritten if it already exists?
+        Should the database file be overwritten even if it already exists?
         (default: False)
 
     """
+    assert teff is not None
 
-    def __init__(self, data_root=None, clobber=False):
-        self.db_filename = download_database(data_root=data_root,
-                                             clobber=clobber)
+    # Make sure that the database is saved locally.
+    filename = download_database(data_root=data_root, clobber=clobber)
 
-    def get_coeffs(self, teff, logg=None, feh=None):
-        """
-        Get the coefficients of the quadratic limb darkening profile given by
-        theory.
+    # Construct the SQL query.
+    q = """
+    SELECT mu1,mu2 FROM claret11 WHERE
+    teff=(SELECT teff FROM claret11 ORDER BY abs(teff-?) LIMIT 1)
+    ORDER BY (logg-?) * (logg-?) + (feh-?) * (feh-?) LIMIT 1
+    """
+    pars = [teff, logg, logg, feh, feh]
 
-        :param teff:
-            The effective temperature in degrees K.
+    # Execute the command.
+    with sqlite3.connect(filename) as conn:
+        c = conn.cursor()
+        rows = c.execute(q, pars)
+        mu1, mu2 = rows.fetchone()
 
-        :param logg: (optional)
-            The log10 surface gravity in cm/s/s.
-
-        :param feh: (optional)
-            The metallicity [Fe/H].
-
-        """
-        assert teff is not None
-
-        q = """
-        SELECT mu1,mu2 FROM claret11 WHERE
-        teff=(SELECT teff FROM claret11 ORDER BY abs(teff-?) LIMIT 1)
-        ORDER BY (logg-?) * (logg-?) + (feh-?) * (feh-?) LIMIT 1
-        """
-        pars = [teff, logg, logg, feh, feh]
-
-        with sqlite3.connect(self.db_filename) as conn:
-            c = conn.cursor()
-            rows = c.execute(q, pars)
-            mu1, mu2 = rows.fetchone()
-
-        return mu1, mu2
+    return mu1, mu2
 
 
 def download_database(data_root=None, clobber=False):
