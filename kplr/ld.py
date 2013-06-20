@@ -7,16 +7,17 @@ from __future__ import (division, print_function, absolute_import,
 __all__ = ["get_quad_coeffs", "LDCoeffAdaptor"]
 
 import os
-import urllib
+import sqlite3
 import urllib2
 import logging
 from tempfile import NamedTemporaryFile
 
 from .config import KPLR_ROOT
 
+DB_FILENAME = "ldcoeffs.db"
 
-def get_quad_coeffs(teff=5778, logg=None, feh=None, model="sing09",
-                    data_root=None):
+
+def get_quad_coeffs(teff=5778, logg=None, feh=None, data_root=None):
     """
     Get the quadratic coefficients for the standard Kepler limb-darkening
     profile.
@@ -30,9 +31,6 @@ def get_quad_coeffs(teff=5778, logg=None, feh=None, model="sing09",
     :param feh: (optional)
         The metallicity [Fe/H].
 
-    :model: (optional)
-        The theoretical model to use. See :class:`LDCoeffAdaptor`.
-
     :param data_root: (optional)
         The local base directory where the grids will be downloaded to. This
         can also be set using the ``KPLR_ROOT`` environment variable. The
@@ -40,76 +38,31 @@ def get_quad_coeffs(teff=5778, logg=None, feh=None, model="sing09",
 
     """
     # Find the LD coefficients from the theoretical models.
-    a = LDCoeffAdaptor(model=model)
+    a = LDCoeffAdaptor(data_root=data_root)
     return a.get_coeffs(teff, logg=logg, feh=feh)
 
 
 class LDCoeffAdaptor(object):
     """
-    Wrapper around various theoretical models for the coefficients of limb
-    darkening profiles for Kepler stars.
-
-    :param model: (optional)
-        The name of the model that you would like to use. The currently
-        supported models are ``sing09`` and ``claret11``. When you use a model
-        for the first time, it will download the data file and save it to
-        ``{data_root}/ldcoeffs/claret11.txt``.
+    Wrapper around the `Claret & Bloemen (2011)
+    <http://adsabs.harvard.edu/abs/2011A%26A...529A..75C>`_ values for limb
+    darkening coefficients. The data is stored in a SQLite database that will
+    be downloaded from the server if it isn't already stored locally.
 
     :param data_root: (optional)
         The local base directory where the grids will be downloaded to. This
         can also be set using the ``KPLR_ROOT`` environment variable. The
         default value is ``~/.kplr``.
 
+    :param clobber: (optional)
+        Should the database file be overwritten if it already exists?
+        (default: False)
+
     """
 
-    models = {
-        "sing09": "http://broiler.astrometry.net/~dfm265/ldcoeffs/sing.txt",
-        "claret11": "http://broiler.astrometry.net/~dfm265/ldcoeffs/claret.txt"
-    }
-
-    def __init__(self, model="sing09", data_root=None):
-        if model not in self.models:
-            raise TypeError(("Unrecognized model '{0}'. The allowed values "
-                             "are {1}.").format(model, self.allowed_models))
-
-        # Save the provided data root directory and fall back on the
-        # ``KPLR_ROOT`` environment variable.
-        self.data_root = data_root
-        if data_root is None:
-            self.data_root = KPLR_ROOT
-
-        # Download the data table if it doesn't always exist.
-        local_fn = os.path.join(KPLR_ROOT, "ldcoeffs",
-                                "{0}.txt".format(model))
-        if not os.path.exists(local_fn):
-            print("Downloading the data file for the '{0}' model"
-                  .format(model))
-            r = requests.get(self.models[model])
-            if r.status_code != requests.codes.ok:
-                r.raise_for_status()
-            try:
-                os.makedirs(os.path.dirname(local_fn))
-            except os.error:
-                pass
-            open(local_fn, "w").write(r.content)
-            print("  .. Finished.")
-
-        if model == "sing09":
-            data = np.loadtxt(local_fn, skiprows=10, usecols=range(6))
-            self.T = data[:, 0]
-            self.logg = data[:, 1]
-            self.feh = data[:, 2]
-            self.mu1 = data[:, 4]
-            self.mu2 = data[:, 5]
-
-        else:
-            data = np.loadtxt(local_fn, skiprows=59, delimiter="|",
-                              usecols=range(7))
-            self.T = data[:, 2]
-            self.logg = data[:, 1]
-            self.feh = data[:, 3]
-            self.mu1 = data[:, 5]
-            self.mu2 = data[:, 6]
+    def __init__(self, data_root=None, clobber=False):
+        self.db_filename = download_database(data_root=data_root,
+                                             clobber=clobber)
 
     def get_coeffs(self, teff, logg=None, feh=None):
         """
@@ -126,18 +79,23 @@ class LDCoeffAdaptor(object):
             The metallicity [Fe/H].
 
         """
-        T0 = self.T[np.argmin(np.abs(self.T - teff))]
-        inds = self.T == T0
-        if logg is not None:
-            lg0 = self.logg[np.argmin(np.abs(self.logg - logg))]
-            inds *= self.logg == lg0
-        if feh is not None:
-            feh0 = self.feh[np.argmin(np.abs(self.feh - feh))]
-            inds *= self.feh == feh0
-        return np.mean(self.mu1[inds]), np.mean(self.mu2[inds])
+        assert teff is not None
+
+        q = "SELECT mu1,mu2 FROM claret11 WHERE "
+        q += "teff=(SELECT teff FROM claret11 ORDER BY abs(teff-?) LIMIT 1) "
+        pars = [teff]
+        q += "ORDER BY (logg-?)*(logg-?)+(feh-?)*(feh-?) LIMIT 1"
+        pars += [logg, logg, feh, feh]
+
+        with sqlite3.connect(self.db_filename) as conn:
+            c = conn.cursor()
+            rows = c.execute(q, pars)
+            mu1, mu2 = rows.fetchone()
+
+        return mu1, mu2
 
 
-def download_database(data_root=None):
+def download_database(data_root=None, clobber=False):
     """
     Download a SQLite database containing the limb darkening coefficients
     computed by `Claret & Bloemen (2011)
@@ -166,7 +124,16 @@ def download_database(data_root=None):
     # Figure out the local filename for the database.
     if data_root is None:
         data_root = KPLR_ROOT
-    filename = os.path.join(data_root, "ldcoeffs.db")
+    filename = os.path.join(data_root, DB_FILENAME)
+
+    if not clobber and os.path.exists(filename):
+        return filename
+
+    # Make sure that the target directory exists.
+    try:
+        os.makedirs(data_root)
+    except os.error:
+        pass
 
     # MAGIC: specify the URL for the remote file.
     url = "http://bbq.dfm.io/~dfm/ldcoeffs.db"
@@ -192,3 +159,5 @@ def download_database(data_root=None):
     os.fsync(f.fileno())
     f.close()
     os.rename(f.name, filename)
+
+    return filename
