@@ -34,7 +34,10 @@ class Adapter(object):
         final = {}
         for longname, (shortname, conv) in self._parameters.items():
             try:
-                final[shortname] = conv(row.pop(longname, None))
+                try:
+                    final[shortname] = conv(row.pop(longname, None))
+                except TypeError:
+                    final[shortname] = conv(row.pop(longname, 0))
             except ValueError:
                 final[shortname] = None
 
