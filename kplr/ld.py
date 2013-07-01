@@ -7,6 +7,7 @@ from __future__ import (division, print_function, absolute_import,
 __all__ = ["get_quad_coeffs"]
 
 import os
+import shutil
 import sqlite3
 import urllib2
 import logging
@@ -127,6 +128,6 @@ def download_database(data_root=None, clobber=False):
     f.flush()
     os.fsync(f.fileno())
     f.close()
-    os.rename(f.name, filename)
+    shutil.move(f.name, filename)
 
     return filename
