@@ -13,13 +13,27 @@ import types
 import urllib
 import urllib2
 import logging
+from itertools import product
 from tempfile import NamedTemporaryFile
 
+# Optional dependencies.
 try:
     import pyfits
     pyfits = pyfits
 except ImportError:
     pyfits = None
+
+try:
+    import numpy as np
+    np = np
+except ImportError:
+    np = None
+
+try:
+    import matplotlib.pyplot as pl
+    pl = pl
+except ImportError:
+    pl = None
 
 from .config import KPLR_ROOT
 from . import mast
@@ -649,6 +663,12 @@ class _datafile(Model):
 
         return self
 
+    def plot(self):
+        if np is None:
+            raise ImportError("numpy is required for plotting.")
+        if pl is None:
+            raise ImportError("matplotlib is required for plotting.")
+
 
 class LightCurve(_datafile):
     """
@@ -660,6 +680,42 @@ class LightCurve(_datafile):
     product = "lightcurves"
     suffixes = ["llc", "slc"]
     filetype = ".fits"
+
+    def plot(self):
+        """
+        Make a simple diagnostic plot of the light curve.
+
+        :return fig:
+            A :class:`matplotlib.Figure` object containing the plot.
+
+        """
+        super(LightCurve, self).plot()
+
+        # Load the data.
+        with self.open() as f:
+            data = f[1].data
+        time, sapflux, pdcflux = (data["time"], data["sap_flux"],
+                                  data["pdcsap_flux"])
+
+        # Set up the figure.
+        fig, axes = pl.subplots(1, 2, figsize=(10, 5))
+        fig.subplots_adjust(wspace=0.0, hspace=0.0)
+
+        # Plot the data.
+        m = np.isfinfite(time)
+        xlim = [np.min(time), np.max(time)]
+        for i, (f, nm) in enumerate(zip([sapflux, pdcflux],
+                                        ["SAP flux", "PDC flux"])):
+            ax = axes[0, i]
+            m = np.isfinite(f)
+            ax.plot(time[m], f[m])
+            ax.set_xlim(xlim)
+            ax.set_ylabel(nm)
+
+        axes[0, 0].set_xticklabels([])
+        axes[0, 1].set_xlabel("time [KBJD]")
+
+        return fig
 
 
 class TargetPixelFile(_datafile):
@@ -673,3 +729,50 @@ class TargetPixelFile(_datafile):
     product = "target_pixel_files"
     suffixes = ["lpd-targ", "spd-targ"]
     filetype = ".fits.gz"
+
+    def plot(self):
+        """
+        Make a simple diagnostic plot of the target pixel light curves. The
+        pixels in the optimal aperture are plotted in black and those outside
+        are plotted in red.
+
+        :return fig:
+            A :class:`matplotlib.Figure` object containing the grid of axes.
+
+        """
+        super(TargetPixelFile, self).plot()
+
+        # Load the data.
+        with self.open() as f:
+            data = f[1].data
+            aperture = f[2].data
+        time, flux = data["time"], data["flux"]
+        nx, ny = flux[0].shape
+
+        # Set up the figures.
+        factor = 2.0
+        lbdim = 0.5 * factor
+        trdim = 0.05 * factor
+        whspace = 0.0
+        dx = factor * nx + factor * (nx - 1.) * whspace
+        dy = factor * ny + factor * (ny - 1.) * whspace
+        fig, axes = pl.subplots(nx, ny, figsize=(dy + lbdim + trdim,
+                                                 dx + lbdim + trdim))
+        fig.subplots_adjust(wspace=whspace, hspace=whspace)
+
+        # Loop over the pixels.
+        m = np.isfinfite(time)
+        xlim = [np.min(time), np.max(time)]
+        for xi, yi in product(range(nx), range(ny)):
+            ax = axes[xi, yi]
+            f = flux[:, xi, yi]
+
+            m = np.isfinite(f)
+            ax.plot(time[m], f[m], ".", color="rk"[int(aperture[xi, yi] == 3)],
+                    ms=2)
+
+            ax.set_xlim(xlim)
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
+
+        return fig
