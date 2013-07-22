@@ -694,8 +694,9 @@ class LightCurve(_datafile):
         # Load the data.
         with self.open() as f:
             data = f[1].data
-        time, sapflux, pdcflux = (data["time"], data["sap_flux"],
-                                  data["pdcsap_flux"])
+        time, sapflux, pdcflux, qual = (data["time"], data["sap_flux"],
+                                        data["pdcsap_flux"],
+                                        data["sap_quality"])
 
         # Set up the figure.
         fig, axes = pl.subplots(1, 2, figsize=(10, 5))
@@ -705,10 +706,13 @@ class LightCurve(_datafile):
         m = np.isfinfite(time)
         xlim = [np.min(time), np.max(time)]
         for i, (f, nm) in enumerate(zip([sapflux, pdcflux],
-                                        ["SAP flux", "PDC flux"])):
+                                        ["sap flux", "pdc flux"])):
             ax = axes[0, i]
-            m = np.isfinite(f)
-            ax.plot(time[m], f[m])
+            m = np.isfinite(time) * np.isfinite(f)
+            m1 = m * (qual == 0)
+            m2 = m * (qual != 0)
+            ax.plot(time[m1], f[m1], ".k")
+            ax.plot(time[m2], f[m2], "+k")
             ax.set_xlim(xlim)
             ax.set_ylabel(nm)
 
