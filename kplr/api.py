@@ -699,25 +699,33 @@ class LightCurve(_datafile):
                                         data["sap_quality"])
 
         # Set up the figure.
-        fig, axes = pl.subplots(1, 2, figsize=(10, 5))
-        fig.subplots_adjust(wspace=0.0, hspace=0.0)
+        fig, axes = pl.subplots(2, 1, figsize=(6, 6))
+        fig.subplots_adjust(left=0.17, top=0.99, right=0.99,
+                            wspace=0.0, hspace=0.0)
 
         # Plot the data.
-        m = np.isfinfite(time)
-        xlim = [np.min(time), np.max(time)]
+        m = np.isfinite(time)
+        xlim = [np.min(time[m]), np.max(time[m])]
         for i, (f, nm) in enumerate(zip([sapflux, pdcflux],
                                         ["sap flux", "pdc flux"])):
-            ax = axes[0, i]
+            ax = axes[i]
             m = np.isfinite(time) * np.isfinite(f)
             m1 = m * (qual == 0)
             m2 = m * (qual != 0)
-            ax.plot(time[m1], f[m1], ".k")
-            ax.plot(time[m2], f[m2], "+k")
+            mu = np.median(f[m1])
+            f1 = (f[m1] / mu - 1) * 1e6
+            ax.plot(time[m1], f1, ".k", ms=3, alpha=0.6)
+            ax.plot(time[m2], (f[m2] / np.median(f[m2]) - 1) * 1e6, ".r", ms=3,
+                    alpha=0.6)
             ax.set_xlim(xlim)
-            ax.set_ylabel(nm)
+            ax.set_ylim(np.min(f1), np.max(f1))
+            ax.annotate("relative "+nm+" [ppm]",
+                        xy=(1, 1), xycoords="axes fraction",
+                        xytext=(-3, -3), textcoords="offset points",
+                        horizontalalignment="right", verticalalignment="top")
 
-        axes[0, 0].set_xticklabels([])
-        axes[0, 1].set_xlabel("time [KBJD]")
+        axes[0].set_xticklabels([])
+        axes[1].set_xlabel("time [KBJD]")
 
         return fig
 
@@ -754,19 +762,16 @@ class TargetPixelFile(_datafile):
         nx, ny = flux[0].shape
 
         # Set up the figures.
-        factor = 2.0
-        lbdim = 0.5 * factor
-        trdim = 0.05 * factor
-        whspace = 0.0
-        dx = factor * nx + factor * (nx - 1.) * whspace
-        dy = factor * ny + factor * (ny - 1.) * whspace
-        fig, axes = pl.subplots(nx, ny, figsize=(dy + lbdim + trdim,
-                                                 dx + lbdim + trdim))
-        fig.subplots_adjust(wspace=whspace, hspace=whspace)
+        factor = 3.0
+        dx = factor * nx
+        dy = factor * ny
+        fig, axes = pl.subplots(nx, ny, figsize=(dy, dx))
+        fig.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0,
+                            wspace=0.0, hspace=0.0)
 
         # Loop over the pixels.
-        m = np.isfinfite(time)
-        xlim = [np.min(time), np.max(time)]
+        m = np.isfinite(time)
+        xlim = [np.min(time[m]), np.max(time[m])]
         for xi, yi in product(range(nx), range(ny)):
             ax = axes[xi, yi]
             f = flux[:, xi, yi]
