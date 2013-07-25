@@ -10,6 +10,7 @@ import os
 import re
 import json
 import types
+import shutil
 import urllib
 import urllib2
 import logging
@@ -659,7 +660,7 @@ class _datafile(Model):
         f.flush()
         os.fsync(f.fileno())
         f.close()
-        os.rename(f.name, filename)
+        shutil.move(f.name, filename)
 
         return self
 
