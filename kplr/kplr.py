@@ -4,10 +4,10 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["TIME_BASELINE", "EXPOSURE_TIMES"]
+__all__ = ["KBJD_ZERO", "EXPOSURE_TIMES"]
 
 # The zero point of the Kepler time basis (KBJD).
-TIME_BASELINE = 2454833.0
+KBJD_ZERO = 2454833.0
 
 # The (approximate) length of a Kepler exposure in seconds for short and long
 # cadence measurements.
