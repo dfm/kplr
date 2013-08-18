@@ -440,7 +440,7 @@ class Model(object):
 
         """
         return self.api.light_curves(self.kepid, short_cadence=short_cadence,
-                                     clobber=clobber)
+                                     fetch=fetch, clobber=clobber)
 
     def get_target_pixel_files(self, short_cadence=True, fetch=False,
                                clobber=False):
@@ -463,6 +463,7 @@ class Model(object):
         """
         return self.api.target_pixel_files(self.kepid,
                                            short_cadence=short_cadence,
+                                           fetch=fetch,
                                            clobber=clobber)
 
 
