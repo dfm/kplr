@@ -25,6 +25,12 @@ except ImportError:
     pyfits = None
 
 try:
+    import fitsio
+    fitsio = fitsio
+except ImportError:
+    fitsio = None
+
+try:
     import numpy as np
     np = np
 except ImportError:
@@ -611,13 +617,29 @@ class _datafile(Model):
         if pyfits is None:
             raise ImportError("The pyfits module is required to read data "
                               "files.")
-
-        # Download the file if it's not already cached.
         fn = self.filename
         self.fetch(clobber=clobber)
-
-        # Load the pyfits file.
         return pyfits.open(fn, **kwargs)
+
+    def read(self, clobber=False, **kwargs):
+        """
+        Read a FITS file using `fitsio <https://github.com/esheldon/fitsio>`_.
+
+        :param clobber:
+            Overwrite the local file even if it exists? This can be helpful if
+            the file gets corrupted somehow.
+
+        :param **kwargs:
+            Any keyword arguments that you would like to pass to the
+            :func:`fitsio.read` function.
+
+        """
+        if fitsio is None:
+            raise ImportError("The fitsio module is required to read data "
+                              "files.")
+        fn = self.filename
+        self.fetch(clobber=clobber)
+        return fitsio.read(fn, **kwargs)
 
     def fetch(self, clobber=False):
         """
