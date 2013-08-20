@@ -157,6 +157,10 @@ class API(object):
             full_url = handler.geturl() + "?" + urllib.urlencode(params)
             raise APIError(code, full_url, txt)
 
+        # Check for no rows found.
+        if "no rows" in txt:
+            return []
+
         # Parse the JSON.
         try:
             result = json.loads(txt)
@@ -308,9 +312,6 @@ class API(object):
         data_list = self.mast_request("data_search",
                                       adapter=mast.dataset_adapter,
                                       **params)
-        if not len(data_list):
-            raise ValueError("No data files found for: '{0}'"
-                             .format(kepler_id))
         return data_list
 
     def light_curves(self, kepler_id, short_cadence=True, fetch=False,
