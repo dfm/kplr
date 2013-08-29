@@ -292,7 +292,7 @@ class API(object):
                              .format(kepid))
         return stars[0]
 
-    def _data_search(self, kepler_id, short_cadence=True):
+    def _data_search(self, kepler_id=None, short_cadence=True, **params):
         """
         Run a generic data search on MAST to return a list of dictionaries
         describing the data products.
@@ -304,8 +304,12 @@ class API(object):
             A boolean flag that determines whether or not the short cadence
             data should be included.
 
+        :param ** params:
+            Any other search parameters.
+
         """
-        params = {"ktc_kepler_id": kepler_id}
+        if kepler_id is not None:
+            params["ktc_kepler_id"] = kepler_id
         if not short_cadence:
             params["ktc_target_type"] = "LC"
 
@@ -314,8 +318,8 @@ class API(object):
                                       **params)
         return data_list
 
-    def light_curves(self, kepler_id, short_cadence=True, fetch=False,
-                     clobber=False):
+    def light_curves(self, kepler_id=None, short_cadence=True, fetch=False,
+                     clobber=False, **params):
         """
         Find the set of light curves associated with a KIC target.
 
@@ -334,15 +338,18 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be overwritten even if it already exists.
 
+        :param ** params:
+            Other search parameters to be passed to the MAST data search.
+
         """
         lcs = [LightCurve(self, d) for d in self._data_search(kepler_id,
-               short_cadence=short_cadence)]
+               short_cadence=short_cadence, **params)]
         if fetch:
             [l.fetch(clobber=clobber) for l in lcs]
         return lcs
 
-    def target_pixel_files(self, kepler_id, short_cadence=True, fetch=False,
-                           clobber=False):
+    def target_pixel_files(self, kepler_id=None, short_cadence=True,
+                           fetch=False, clobber=False, **params):
         """
         Find the set of target pixel files associated with a KIC target.
 
@@ -361,9 +368,12 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be overwritten even if it already exists.
 
+        :param ** params:
+            Other search parameters to be passed to the MAST data search.
+
         """
         tpfs = [TargetPixelFile(self, d) for d in self._data_search(kepler_id,
-                short_cadence=short_cadence)]
+                short_cadence=short_cadence, **params)]
         if fetch:
             [l.fetch(clobber=clobber) for l in tpfs]
         return tpfs
