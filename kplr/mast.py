@@ -29,6 +29,9 @@ class Adapter(object):
     def __init__(self, parameters):
         self._parameters = parameters
 
+        # Add some general purpose parameters.
+        self._parameters["Ang Sep (')"] = ("angular_separation", float)
+
     def __call__(self, row):
         row = dict(row)
         final = {}
@@ -279,6 +282,7 @@ star_adapter = Adapter({
     "J-K color": ("kic_jkcolor", float),
     "g-K color": ("kic_gkcolor", float),
     "RA hours (J2000)": ("kic_ra", float),
+    "Flag": ("flag", int),
 })
 
 dataset_adapter = Adapter({
