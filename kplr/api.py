@@ -756,7 +756,7 @@ class LightCurve(_datafile):
                     alpha=0.6)
             ax.set_xlim(xlim)
             ax.set_ylim(np.min(f1), np.max(f1))
-            ax.annotate("relative "+nm+" [ppm]",
+            ax.annotate("relative " + nm + " [ppm]",
                         xy=(1, 1), xycoords="axes fraction",
                         xytext=(-3, -3), textcoords="offset points",
                         horizontalalignment="right", verticalalignment="top")
