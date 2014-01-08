@@ -5,6 +5,8 @@ from __future__ import (division, print_function, absolute_import,
 
 import unittest
 
+import mock
+
 from kplr.mast import Adapter
 
 
@@ -28,3 +30,12 @@ class AdapterTestCase(unittest.TestCase):
         row = {"Kepler ID": "666"}
         output_row = adapter(row)
         self.assertEqual(output_row["kepid"], 666)
+
+    @mock.patch('kplr.mast.logging')
+    def test_unknown_parameter_logs_warning(self, mock_logging):
+        adapter = Adapter({
+            "Kepler ID": ("kepid", int),
+        })
+        row = {"Some other parameter": "42"}
+        adapter(row)
+        mock_logging.warn.assert_called_once()
