@@ -4,3 +4,6 @@ venv
 dist
 *.egg-info
 build
+*.swp
+.coverage
+htmlcov
