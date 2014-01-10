@@ -23,6 +23,30 @@ class ApiTestCase(unittest.TestCase):
         api = API("/home/data/")
         self.assertEqual(api.data_root, "/home/data/")
 
+    def test_munge_dict_int_value(self):
+        api = API()
+        row = {"key": "666"}
+        new_row = api._munge_dict(row)
+        self.assertEqual(new_row["key"], 666)
+
+    def test_munge_dict_float_value(self):
+        api = API()
+        row = {"key": "66.6"}
+        new_row = api._munge_dict(row)
+        self.assertAlmostEqual(new_row["key"], 66.6)
+
+    def test_munge_dict_text_value(self):
+        api = API()
+        row = {"key": "value"}
+        new_row = api._munge_dict(row)
+        self.assertEqual(new_row["key"], "value")
+
+    def test_munge_dict_empty_value(self):
+        api = API()
+        row = {"key": ""}
+        new_row = api._munge_dict(row)
+        self.assertIsNone(new_row["key"])
+
 
 class TestModel(Model):
     _id = "\"{kepler_name}\""
