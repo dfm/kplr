@@ -23,6 +23,11 @@ class ApiTestCase(unittest.TestCase):
         api = API("/home/data/")
         self.assertEqual(api.data_root, "/home/data/")
 
+    def test_data_root_in_str_and_repr(self):
+        api = API()
+        self.assertIn(api.data_root, str(api))
+        self.assertIn(api.data_root, repr(api))
+
     def test_munge_dict_int_value(self):
         api = API()
         row = {"key": "666"}
