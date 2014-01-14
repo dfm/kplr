@@ -10,7 +10,7 @@ try:
 except ImportError:
     import mock
 
-from kplr.api import API, Model
+from kplr.api import API, Model, KOI, Planet, Star
 from kplr.config import KPLR_ROOT
 
 
@@ -96,3 +96,83 @@ class ModelTestCase(unittest.TestCase):
             fetch=True,
             clobber=True,
         )
+
+
+class KOIModelTestCase(unittest.TestCase):
+    def setUp(self):
+        self.mock_api = mock.MagicMock(spec=API)
+        self.mock_api.star.return_value = mock.MagicMock(spec=Star)
+        self.params = {
+            "kepid": "9787239",
+            "kepoi_name": "K00952.01",
+        }
+        self.koi = KOI(self.mock_api, self.params)
+
+    def test_kepoi_name_in_str_and_repr(self):
+        self.assertIn(self.params["kepoi_name"], str(self.koi))
+
+    def test_star_property_is_cached(self):
+        star = self.koi.star
+        self.assertIsNotNone(star)
+        self.assertTrue(self.mock_api.star.called)
+        self.mock_api.star.reset_mock()
+        star = self.koi.star
+        self.assertIsNotNone(star)
+        self.assertFalse(self.mock_api.star.called)
+
+
+class PlanetModelTestCase(unittest.TestCase):
+    def setUp(self):
+        self.mock_api = mock.MagicMock(spec=API)
+        self.mock_api.koi.return_value = mock.MagicMock(spec=KOI)
+        self.mock_api.star.return_value = mock.MagicMock(spec=Star)
+        self.params = {
+            "kepid": "9787239",
+            "kepler_name": "Kepler-32 f",
+            "koi_number": "952.05",
+        }
+        self.planet = Planet(self.mock_api, self.params)
+
+    def test_kepler_name_in_str_and_repr(self):
+        self.assertIn(self.params["kepler_name"], str(self.planet))
+
+    def test_koi_property_is_cached(self):
+        koi = self.planet.koi
+        self.assertIsNotNone(koi)
+        self.assertTrue(self.mock_api.koi.called)
+        self.mock_api.koi.reset_mock()
+        koi = self.planet.koi
+        self.assertIsNotNone(koi)
+        self.assertFalse(self.mock_api.koi.called)
+
+    def test_star_property_is_cached(self):
+        star = self.planet.star
+        self.assertIsNotNone(star)
+        self.assertTrue(self.mock_api.star.called)
+        self.mock_api.star.reset_mock()
+        star = self.planet.star
+        self.assertIsNotNone(star)
+        self.assertFalse(self.mock_api.star.called)
+
+
+class StarModelTestCase(unittest.TestCase):
+    def setUp(self):
+        self.mock_api = mock.MagicMock(spec=API)
+        self.mock_api.kois.return_value = [mock.MagicMock(spec=KOI)]
+        self.params = {
+            "kic_kepler_id": "9787239",
+            "kepid": "9787239",
+        }
+        self.star = Star(self.mock_api, self.params)
+
+    def test_kic_kepler_id_in_str_and_repr(self):
+        self.assertIn(self.params["kic_kepler_id"], str(self.star))
+
+    def test_kois_property_is_cached(self):
+        kois = self.star.kois
+        self.assertIsNotNone(kois)
+        self.assertTrue(self.mock_api.kois.called)
+        self.mock_api.kois.reset_mock()
+        kois = self.star.kois
+        self.assertIsNotNone(kois)
+        self.assertFalse(self.mock_api.kois.called)
