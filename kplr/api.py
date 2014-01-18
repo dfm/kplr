@@ -9,13 +9,13 @@ __all__ = ["API", "KOI", "Planet", "Star", "LightCurve", "TargetPixelFile"]
 import os
 import re
 import json
-import types
 import shutil
-import urllib
-import urllib2
 import logging
 from itertools import product
 from tempfile import NamedTemporaryFile
+
+import six
+from six.moves import urllib
 
 # Optional dependencies.
 try:
@@ -90,7 +90,7 @@ class API(object):
 
         # Deal with sort order.
         if sort is not None:
-            if isinstance(sort, types.StringTypes):
+            if isinstance(sort, six.string_types):
                 params["order"] = sort
             else:
                 params["order"] = sort[0]
@@ -99,14 +99,15 @@ class API(object):
 
         # Format the URL in the *horrifying* way that EA needs it to be...
         # they don't un-escape the HTTP parameters!!!
-        payload = ["{0}={1}".format(k, urllib.quote_plus(v, "\"'+"))
+        payload = ["{0}={1}".format(k, urllib.parse.quote_plus(v, "\"'+"))
                    for k, v in params.items()]
 
         # Send the request.
-        r = urllib2.Request(self.ea_url, data="&".join(payload))
-        handler = urllib2.urlopen(r)
+        encoded_data = "&".join(payload).encode("ascii")
+        r = urllib.request.Request(self.ea_url, data=encoded_data)
+        handler = urllib.request.urlopen(r)
         code = handler.getcode()
-        txt = handler.read()
+        txt = handler.read().decode("ascii")
 
         # Hack because Exoplanet Archive doesn't return HTTP errors.
         if int(code) != 200 or "ERROR" in txt:
@@ -140,7 +141,7 @@ class API(object):
 
         # Deal with sort order.
         if sort is not None:
-            if isinstance(sort, types.StringTypes):
+            if isinstance(sort, six.string_types):
                 params["ordercolumn1"] = sort
             else:
                 params["ordercolumn1"] = sort[0]
@@ -148,13 +149,14 @@ class API(object):
                     params["descending1"] = "on"
 
         # Send the request.
-        r = urllib2.Request(self.mast_url.format(category),
-                            data=urllib.urlencode(params))
-        handler = urllib2.urlopen(r)
+        encoded_data = urllib.parse.urlencode(params).encode("ascii")
+        r = urllib.request.Request(self.mast_url.format(category),
+                                   data=encoded_data)
+        handler = urllib.request.urlopen(r)
         code = handler.getcode()
-        txt = handler.read()
+        txt = handler.read().decode("ascii")
         if int(code) != 200:
-            full_url = handler.geturl() + "?" + urllib.urlencode(params)
+            full_url = handler.geturl() + "?" + urllib.parse.urlencode(params)
             raise APIError(code, full_url, txt)
 
         # Check for no rows found.
@@ -165,7 +167,7 @@ class API(object):
         try:
             result = json.loads(txt)
         except ValueError:
-            full_url = handler.geturl() + "?" + urllib.urlencode(params)
+            full_url = handler.geturl() + "?" + urllib.parse.urlencode(params)
             raise APIError(code, full_url,
                            "No JSON object could be decoded.\n" + txt)
 
@@ -424,7 +426,7 @@ class Model(object):
     def __init__(self, api, params):
         self.api = api
         self.params = params
-        for k, v in params.iteritems():
+        for k, v in params.items():
             setattr(self, k, v)
 
         self._name = self._id.format(**params)
@@ -671,8 +673,8 @@ class _datafile(Model):
         # Fetch the remote file.
         url = self.url
         logging.info("Downloading file from: '{0}'".format(url))
-        r = urllib2.Request(url)
-        handler = urllib2.urlopen(r)
+        r = urllib.request.Request(url)
+        handler = urllib.request.urlopen(r)
         code = handler.getcode()
         if int(code) != 200:
             raise APIError(code, url, "")
@@ -754,7 +756,7 @@ class LightCurve(_datafile):
                     alpha=0.6)
             ax.set_xlim(xlim)
             ax.set_ylim(np.min(f1), np.max(f1))
-            ax.annotate("relative "+nm+" [ppm]",
+            ax.annotate("relative " + nm + " [ppm]",
                         xy=(1, 1), xycoords="axes fraction",
                         xytext=(-3, -3), textcoords="offset points",
                         horizontalalignment="right", verticalalignment="top")

@@ -9,9 +9,10 @@ __all__ = ["get_quad_coeffs"]
 import os
 import shutil
 import sqlite3
-import urllib2
 import logging
 from tempfile import NamedTemporaryFile
+
+from six.moves import urllib
 
 from .config import KPLR_ROOT
 
@@ -110,8 +111,8 @@ def download_database(data_root=None, clobber=False):
 
     # Fetch the database from the server.
     logging.info("Downloading file from: '{0}'".format(url))
-    r = urllib2.Request(url)
-    handler = urllib2.urlopen(r)
+    r = urllib.request.Request(url)
+    handler = urllib.request.urlopen(r)
     code = handler.getcode()
     if int(code) != 200:
         raise RuntimeError("Couldn't download file from {0}. Returned: {1}"
