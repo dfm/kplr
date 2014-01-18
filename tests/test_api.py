@@ -112,12 +112,10 @@ class KOIModelTestCase(unittest.TestCase):
         self.assertIn(self.params["kepoi_name"], str(self.koi))
 
     def test_star_property_is_cached(self):
-        star = self.koi.star
-        self.assertIsNotNone(star)
+        self.assertIsNotNone(self.koi.star)
         self.assertTrue(self.mock_api.star.called)
         self.mock_api.star.reset_mock()
-        star = self.koi.star
-        self.assertIsNotNone(star)
+        self.assertIsNotNone(self.koi.star)
         self.assertFalse(self.mock_api.star.called)
 
 
@@ -137,21 +135,17 @@ class PlanetModelTestCase(unittest.TestCase):
         self.assertIn(self.params["kepler_name"], str(self.planet))
 
     def test_koi_property_is_cached(self):
-        koi = self.planet.koi
-        self.assertIsNotNone(koi)
+        self.assertIsNotNone(self.planet.koi)
         self.assertTrue(self.mock_api.koi.called)
         self.mock_api.koi.reset_mock()
-        koi = self.planet.koi
-        self.assertIsNotNone(koi)
+        self.assertIsNotNone(self.planet.koi)
         self.assertFalse(self.mock_api.koi.called)
 
     def test_star_property_is_cached(self):
-        star = self.planet.star
-        self.assertIsNotNone(star)
+        self.assertIsNotNone(self.planet.star)
         self.assertTrue(self.mock_api.star.called)
         self.mock_api.star.reset_mock()
-        star = self.planet.star
-        self.assertIsNotNone(star)
+        self.assertIsNotNone(self.planet.star)
         self.assertFalse(self.mock_api.star.called)
 
 
@@ -169,10 +163,8 @@ class StarModelTestCase(unittest.TestCase):
         self.assertIn(self.params["kic_kepler_id"], str(self.star))
 
     def test_kois_property_is_cached(self):
-        kois = self.star.kois
-        self.assertIsNotNone(kois)
+        self.assertIsNotNone(self.star.kois)
         self.assertTrue(self.mock_api.kois.called)
         self.mock_api.kois.reset_mock()
-        kois = self.star.kois
-        self.assertIsNotNone(kois)
+        self.assertIsNotNone(self.star.kois)
         self.assertFalse(self.mock_api.kois.called)
