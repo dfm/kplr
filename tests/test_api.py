@@ -10,7 +10,7 @@ try:
 except ImportError:
     import mock
 
-from kplr.api import API, Model, KOI, Planet, Star
+from kplr.api import API, Model, KOI, Planet, Star, LightCurve
 from kplr.config import KPLR_ROOT
 
 
@@ -168,3 +168,27 @@ class StarModelTestCase(unittest.TestCase):
         self.mock_api.kois.reset_mock()
         self.assertIsNotNone(self.star.kois)
         self.assertFalse(self.mock_api.kois.called)
+
+
+class LightCurveTestCase(unittest.TestCase):
+    def setUp(self):
+        self.mock_api = mock.MagicMock(spec=API)
+        self.mock_api.data_root = "/home/data/"
+        self.params = {
+            "sci_data_set_name": "KPLR009787239-2009166043257",
+            "ktc_kepler_id": "9787239",
+            "ktc_target_type": "LC",
+        }
+        self.lightcurve = LightCurve(self.mock_api, self.params)
+
+    def test_filename(self):
+        filename = self.lightcurve.filename
+        self.assertTrue(filename.endswith(".fits"))
+        self.assertIn(self.mock_api.data_root, filename)
+        self.assertIn(self.lightcurve.sci_data_set_name, filename)
+
+    def test_url(self):
+        url = self.lightcurve.url
+        self.assertTrue(url.endswith(".fits"))
+        self.assertIn("lightcurves", url)
+        self.assertIn(self.lightcurve.kepid, url)
