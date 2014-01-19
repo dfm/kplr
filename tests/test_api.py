@@ -185,7 +185,7 @@ class LightCurveTestCase(unittest.TestCase):
         filename = self.lightcurve.filename
         self.assertTrue(filename.endswith(".fits"))
         self.assertIn(self.mock_api.data_root, filename)
-        self.assertIn(self.lightcurve.sci_data_set_name, filename)
+        self.assertIn(self.lightcurve.sci_data_set_name.lower(), filename)
 
     def test_url(self):
         url = self.lightcurve.url
