@@ -22,7 +22,10 @@ try:
     import pyfits
     pyfits = pyfits
 except ImportError:
-    pyfits = None
+    try:
+        import astropy.io.fits as pyfits
+    except ImportError:
+        pyfits = None
 
 try:
     import fitsio
