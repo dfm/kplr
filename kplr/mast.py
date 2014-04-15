@@ -317,7 +317,7 @@ dataset_adapter = Adapter({
     "KEP Mag": ("kic_kepmag", float),
     "2MASS ID": ("twoMass_2mass_id", six.text_type),
     "2MASS Designation": ("twoMass_tmid", int),
-    "twoMass conflict flag": ("twoMass_conflictFlag", six.text_type),
+    "2MASS conflict flag": ("twoMass_conflictFlag", six.text_type),
     "SCP ID": ("kic_scpid", int),
     "Alt ID": ("kic_altid", int),
     "Alt ID Source": ("kic_altsource", int),
