@@ -790,7 +790,7 @@ class TargetPixelFile(_datafile):
     suffixes = ["lpd-targ", "spd-targ"]
     filetype = ".fits.gz"
 
-    def plot(self):
+    def plot(self,normed=False):
         """
         Make a simple diagnostic plot of the target pixel light curves. The
         pixels in the optimal aperture are plotted in black and those outside
@@ -820,16 +820,41 @@ class TargetPixelFile(_datafile):
         # Loop over the pixels.
         m = np.isfinite(time)
         xlim = [np.min(time[m]), np.max(time[m])]
+        ylim = [0.,0.]
         for xi, yi in product(range(nx), range(ny)):
             ax = axes[xi, yi]
             f = flux[:, xi, yi]
 
             m = np.isfinite(f)
-            ax.plot(time[m], f[m], ".", color="rk"[int(aperture[xi, yi] == 3)],
+            if normed:
+                if len(f[m]) > 0:
+                    ax.plot(time[m], (f[m]/np.median(f[m]))-1.0, ".",
+                        color="rk"[int(aperture[xi, yi] == 3)],
+                        ms=2)
+                    minval = np.where(
+                        np.min((f[m]/np.median(f[m]))-1.0)<ylim[0],
+                        np.min((f[m]/np.median(f[m]))-1.0),
+                        ylim[0])
+                    maxval = np.where(
+                        np.max((f[m]/np.median(f[m]))-1.0)>ylim[1],
+                        np.max((f[m]/np.median(f[m]))-1.0),
+                        ylim[1])
+                    minmax = [minval,maxval]
+            else:
+                ax.plot(time[m], f[m], ".",
+                    color="rk"[int(aperture[xi, yi] == 3)],
                     ms=2)
 
             ax.set_xlim(xlim)
             ax.set_xticklabels([])
             ax.set_yticklabels([])
+
+        # If normed, put everything on the same scale
+        if normed:
+            for ax in axes.flatten():
+                try:
+                    ax.set_ylim(minmax)
+                except TypeError:
+                    continue
 
         return fig
