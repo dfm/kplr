@@ -598,6 +598,14 @@ class _datafile(Model):
         self._filename = "{0}_{1}{2}".format(self.sci_data_set_name,
                                              suffix, self.filetype).lower()
 
+    @classmethod
+    def local(cls, fn):
+        self = cls.__new__(cls)
+        self._name = "'local:{0}'".format(fn)
+        self.base_dir = ""
+        self._filename = fn
+        return self
+
     @property
     def filename(self):
         """
