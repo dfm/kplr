@@ -704,7 +704,7 @@ class _datafile(Model):
         code = handler.getcode()
         if int(code) != 200:
             raise APIError(code, url, "")
-        return self._handle_response(handler.read())
+        return self._save_fetched_file(handler.read())
 
     def _save_fetched_file(self, data):
         # Make sure that the root directory exists.
