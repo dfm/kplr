@@ -12,6 +12,7 @@ import json
 import shutil
 import logging
 from itertools import product
+from functools import partial
 from tempfile import NamedTemporaryFile
 
 import six
@@ -20,7 +21,6 @@ from six.moves import urllib
 # Optional dependencies.
 try:
     import pyfits
-    pyfits = pyfits
 except ImportError:
     try:
         import astropy.io.fits as pyfits
@@ -29,21 +29,47 @@ except ImportError:
 
 try:
     import fitsio
-    fitsio = fitsio
 except ImportError:
     fitsio = None
 
 try:
     import numpy as np
-    np = np
 except ImportError:
     np = None
 
 try:
     import matplotlib.pyplot as pl
-    pl = pl
 except ImportError:
     pl = None
+
+try:
+    from tornado import gen
+    import tornado.ioloop
+    from tornado.httpclient import AsyncHTTPClient
+except ImportError:
+    AsyncHTTPClient = None
+
+    def async_download(*args, **kwargs):
+        raise ImportError("You need to install tornado to do an async "
+                          "download")
+else:
+    def handle_response(obj, response):
+        if response.error:
+            response.rethrow()
+        obj._save_fetched_file(response.body)
+
+    @gen.coroutine
+    def _async_download(lcs, clobber=False):
+        client = AsyncHTTPClient()
+        to_fetch = [l for l in lcs if clobber or not l.cache_exists]
+        responses = yield [client.fetch(l.url) for l in to_fetch]
+        [handle_response(to_fetch[i], r) for i, r in enumerate(responses)]
+        raise gen.Return()
+
+    def async_download(lcs, clobber=False):
+        f = partial(_async_download, lcs, clobber=clobber)
+        ioloop = tornado.ioloop.IOLoop.instance()
+        ioloop.run_sync(f)
 
 from .config import KPLR_ROOT
 from . import mast
@@ -324,7 +350,7 @@ class API(object):
         return data_list
 
     def light_curves(self, kepler_id=None, short_cadence=True, fetch=False,
-                     clobber=False, **params):
+                     clobber=False, async=False, **params):
         """
         Find the set of light curves associated with a KIC target.
 
@@ -343,6 +369,9 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be overwritten even if it already exists.
 
+        :param async:
+            If ``True``, download the files asynchronously using Tornado.
+
         :param ** params:
             Other search parameters to be passed to the MAST data search.
 
@@ -350,11 +379,14 @@ class API(object):
         lcs = [LightCurve(self, d) for d in self._data_search(kepler_id,
                short_cadence=short_cadence, **params)]
         if fetch:
-            [l.fetch(clobber=clobber) for l in lcs]
+            if async:
+                async_download(lcs, clobber=clobber)
+            else:
+                [l.fetch(clobber=clobber) for l in lcs]
         return lcs
 
     def target_pixel_files(self, kepler_id=None, short_cadence=True,
-                           fetch=False, clobber=False, **params):
+                           fetch=False, clobber=False, async=False, **params):
         """
         Find the set of target pixel files associated with a KIC target.
 
@@ -373,6 +405,9 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be overwritten even if it already exists.
 
+        :param async:
+            If ``True``, download the files asynchronously using Tornado.
+
         :param ** params:
             Other search parameters to be passed to the MAST data search.
 
@@ -380,7 +415,10 @@ class API(object):
         tpfs = [TargetPixelFile(self, d) for d in self._data_search(kepler_id,
                 short_cadence=short_cadence, **params)]
         if fetch:
-            [l.fetch(clobber=clobber) for l in tpfs]
+            if async:
+                async_download(tpfs, clobber=clobber)
+            else:
+                [l.fetch(clobber=clobber) for l in tpfs]
         return tpfs
 
 
@@ -443,50 +481,23 @@ class Model(object):
     def __repr__(self):
         return self.__str__()
 
-    def get_light_curves(self, short_cadence=True, fetch=False, clobber=False):
+    def get_light_curves(self, **kwargs):
         """
         Get a list of light curve datasets for the model and optionally
-        download the FITS files.
-
-        :param short_cadence:
-            A boolean flag that determines whether or not the short cadence
-            data should be included. (default: True)
-
-        :param fetch:
-            A boolean flag that determines whether or not the data file should
-            be downloaded.
-
-        :param clobber:
-            A boolean flag that determines whether or not the data file should
-            be overwritten even if it already exists.
+        download the FITS files. See :func:`API.light_curves` for parameter
+        documentation.
 
         """
-        return self.api.light_curves(self.kepid, short_cadence=short_cadence,
-                                     fetch=fetch, clobber=clobber)
+        return self.api.light_curves(self.kepid, **kwargs)
 
-    def get_target_pixel_files(self, short_cadence=True, fetch=False,
-                               clobber=False):
+    def get_target_pixel_files(self, **kwargs):
         """
         Get a list of target pixel datasets for the model and optionally
-        download the FITS files.
-
-        :param short_cadence:
-            A boolean flag that determines whether or not the short cadence
-            data should be included. (default: True)
-
-        :param fetch:
-            A boolean flag that determines whether or not the data file should
-            be downloaded.
-
-        :param clobber:
-            A boolean flag that determines whether or not the data file should
-            be overwritten even if it already exists.
+        download the FITS files. See :func:`API.target_pixel_files` for
+        parameter documentation.
 
         """
-        return self.api.target_pixel_files(self.kepid,
-                                           short_cadence=short_cadence,
-                                           fetch=fetch,
-                                           clobber=clobber)
+        return self.api.target_pixel_files(self.kepid, **kwargs)
 
 
 class KOI(Model):
@@ -665,6 +676,10 @@ class _datafile(Model):
         self.fetch(clobber=clobber)
         return fitsio.read(fn, **kwargs)
 
+    @property
+    def cache_exists(self):
+        return os.path.exists(self.filename)
+
     def fetch(self, clobber=False):
         """
         Download the data file from the server and save it locally. The local
@@ -677,7 +692,7 @@ class _datafile(Model):
         """
         # Check if the file already exists.
         filename = self.filename
-        if os.path.exists(filename) and not clobber:
+        if self.cache_exists and not clobber:
             logging.info("Found local file: '{0}'".format(filename))
             return self
 
@@ -689,7 +704,9 @@ class _datafile(Model):
         code = handler.getcode()
         if int(code) != 200:
             raise APIError(code, url, "")
+        return self._handle_response(handler.read())
 
+    def _save_fetched_file(self, data):
         # Make sure that the root directory exists.
         try:
             os.makedirs(self.base_dir)
@@ -697,13 +714,14 @@ class _datafile(Model):
             pass
 
         # Save the contents of the file.
+        filename = self.filename
         logging.info("Saving file to: '{0}'".format(filename))
 
         # Atomically write to disk.
         # http://stackoverflow.com/questions/2333872/ \
         #        atomic-writing-to-file-with-python
         f = NamedTemporaryFile("wb", delete=False)
-        f.write(handler.read())
+        f.write(data)
         f.flush()
         os.fsync(f.fileno())
         f.close()
@@ -790,7 +808,7 @@ class TargetPixelFile(_datafile):
     suffixes = ["lpd-targ", "spd-targ"]
     filetype = ".fits.gz"
 
-    def plot(self,normed=False):
+    def plot(self, normed=False):
         """
         Make a simple diagnostic plot of the target pixel light curves. The
         pixels in the optimal aperture are plotted in black and those outside
@@ -820,7 +838,7 @@ class TargetPixelFile(_datafile):
         # Loop over the pixels.
         m = np.isfinite(time)
         xlim = [np.min(time[m]), np.max(time[m])]
-        ylim = [0.,0.]
+        ylim = [0., 0.]
         for xi, yi in product(range(nx), range(ny)):
             ax = axes[xi, yi]
             f = flux[:, xi, yi]
@@ -829,21 +847,19 @@ class TargetPixelFile(_datafile):
             if normed:
                 if len(f[m]) > 0:
                     ax.plot(time[m], (f[m]/np.median(f[m]))-1.0, ".",
-                        color="rk"[int(aperture[xi, yi] == 3)],
-                        ms=2)
+                            color="rk"[int(aperture[xi, yi] == 3)], ms=2)
                     minval = np.where(
-                        np.min((f[m]/np.median(f[m]))-1.0)<ylim[0],
+                        np.min((f[m]/np.median(f[m]))-1.0) < ylim[0],
                         np.min((f[m]/np.median(f[m]))-1.0),
                         ylim[0])
                     maxval = np.where(
-                        np.max((f[m]/np.median(f[m]))-1.0)>ylim[1],
+                        np.max((f[m]/np.median(f[m]))-1.0) > ylim[1],
                         np.max((f[m]/np.median(f[m]))-1.0),
                         ylim[1])
-                    minmax = [minval,maxval]
+                    minmax = [minval, maxval]
             else:
                 ax.plot(time[m], f[m], ".",
-                    color="rk"[int(aperture[xi, yi] == 3)],
-                    ms=2)
+                        color="rk"[int(aperture[xi, yi] == 3)], ms=2)
 
             ax.set_xlim(xlim)
             ax.set_xticklabels([])
