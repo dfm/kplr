@@ -21,7 +21,7 @@ def gen_adaptor(mission):
         r.raise_for_status()
 
     # Parse the HTML.
-    tree = BeautifulSoup(r.text)
+    tree = BeautifulSoup(r.content)
 
     # Find the table that describes the parameters.
     table_body = tree.find_all("tbody")
@@ -38,11 +38,14 @@ if __name__ == "__main__":
     print("Confirmed planets")
     gen_adaptor("kepler_cp")
 
-    print("\nKOIs")
-    gen_adaptor("kepler_koi")
-
     print("\nStars")
     gen_adaptor("kic10")
 
     print("\nData Search")
     gen_adaptor("kepler")
+
+    print("\nK2 EPIC Search")
+    gen_adaptor("epic")
+
+    print("\nK2 TPFs")
+    gen_adaptor("k2")

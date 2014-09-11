@@ -45,7 +45,7 @@ except ImportError:
 try:
     from tornado import gen
     import tornado.ioloop
-    from tornado.httpclient import AsyncHTTPClient
+    from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 except ImportError:
     AsyncHTTPClient = None
 
@@ -60,9 +60,10 @@ else:
 
     @gen.coroutine
     def _async_download(lcs, clobber=False):
-        client = AsyncHTTPClient()
+        client = AsyncHTTPClient(max_clients=10)
         to_fetch = [l for l in lcs if clobber or not l.cache_exists]
-        responses = yield [client.fetch(l.url) for l in to_fetch]
+        responses = yield [client.fetch(HTTPRequest(l.url))
+                           for l in to_fetch]
         [handle_response(to_fetch[i], r) for i, r in enumerate(responses)]
         raise gen.Return()
 
@@ -88,7 +89,7 @@ class API(object):
 
     ea_url = ("http://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
               "/nph-nstedAPI")
-    mast_url = "http://archive.stsci.edu/kepler/{0}/search.php"
+    mast_url = "http://archive.stsci.edu/{0}/{1}/search.php"
 
     def __init__(self, data_root=None):
         self.data_root = data_root
@@ -152,7 +153,8 @@ class API(object):
 
         return [self._munge_dict(row) for row in result]
 
-    def mast_request(self, category, adapter=None, sort=None, **params):
+    def mast_request(self, category, adapter=None, sort=None, mission="kepler",
+                     **params):
         """
         Submit a request to the MAST API and return a dictionary of parameters.
 
@@ -179,7 +181,7 @@ class API(object):
 
         # Send the request.
         encoded_data = urllib.parse.urlencode(params).encode("ascii")
-        r = urllib.request.Request(self.mast_url.format(category),
+        r = urllib.request.Request(self.mast_url.format(mission, category),
                                    data=encoded_data)
         handler = urllib.request.urlopen(r)
         code = handler.getcode()
@@ -323,7 +325,36 @@ class API(object):
                              .format(kepid))
         return stars[0]
 
-    def _data_search(self, kepler_id=None, short_cadence=True, **params):
+    def k2_stars(self, **params):
+        """
+        Get a list of EPIC targets from MAST. Only return up to 100 results by
+        default.
+
+        :param **params:
+            The query parameters for the MAST API.
+
+        """
+        params["max_records"] = params.pop("max_records", 100)
+        stars = self.mast_request("epic", adapter=mast.epic_adapter,
+                                  mission="k2", **params)
+        return [K2Star(self, s) for s in stars]
+
+    def k2_star(self, id_):
+        """
+        Get a EPIC target by id from MAST.
+
+        :param id:
+            The integer ID of the star in the EPIC.
+
+        """
+        stars = self.k2_stars(id=id_, max_records=1)
+        if not len(stars):
+            raise ValueError("No EPIC target found with id: '{0}'"
+                             .format(id_))
+        return stars[0]
+
+    def _data_search(self, kepler_id=None, short_cadence=True,
+                     adapter=mast.dataset_adapter, **params):
         """
         Run a generic data search on MAST to return a list of dictionaries
         describing the data products.
@@ -344,8 +375,7 @@ class API(object):
         if not short_cadence:
             params["ktc_target_type"] = "LC"
 
-        data_list = self.mast_request("data_search",
-                                      adapter=mast.dataset_adapter,
+        data_list = self.mast_request("data_search", adapter=adapter,
                                       **params)
         return data_list
 
@@ -386,7 +416,8 @@ class API(object):
         return lcs
 
     def target_pixel_files(self, kepler_id=None, short_cadence=True,
-                           fetch=False, clobber=False, async=False, **params):
+                           fetch=False, clobber=False, async=False,
+                           cls=None, **params):
         """
         Find the set of target pixel files associated with a KIC target.
 
@@ -412,7 +443,9 @@ class API(object):
             Other search parameters to be passed to the MAST data search.
 
         """
-        tpfs = [TargetPixelFile(self, d) for d in self._data_search(kepler_id,
+        if cls is None:
+            cls = TargetPixelFile
+        tpfs = [cls(self, d) for d in self._data_search(kepler_id,
                 short_cadence=short_cadence, **params)]
         if fetch:
             if async:
@@ -591,20 +624,50 @@ class Star(Model):
         return self._kois
 
 
+class K2Star(Model):
+    """
+    A star from the `K2 EPIC Catalog (EPIC)
+    <http://archive.stsci.edu/search_fields.php?mission=epic>`_.
+
+    """
+
+    _id = "{id}"
+
+    def get_light_curves(self, **kwargs):
+        """
+        Get a list of light curve datasets for the model and optionally
+        download the FITS files. See :func:`API.light_curves` for parameter
+        documentation.
+
+        """
+        raise NotImplementedError("There aren't any light curves for K2 stars")
+
+    def get_target_pixel_files(self, **kwargs):
+        """
+        Get a list of target pixel datasets for the model and optionally
+        download the FITS files. See :func:`API.target_pixel_files` for
+        parameter documentation.
+
+        """
+        return self.api.target_pixel_files(ktc_k2_id=self.id, mission="k2",
+                                           adapter=mast.k2_dataset_adapter,
+                                           cls=K2TargetPixelFile,
+                                           **kwargs)
+
+
 class _datafile(Model):
 
     _id = "\"{sci_data_set_name}_{ktc_target_type}\""
-    base_url = "http://archive.stsci.edu/pub/kepler/{0}/{1}/{2}/{3}"
+
+    kepid_template = "{ktc_kepler_id:09d}"
+
     product = None
     suffixes = None
     filetype = None
 
     def __init__(self, *args, **params):
         super(_datafile, self).__init__(*args, **params)
-        self.kepid = "{0:09d}".format(int(self.ktc_kepler_id))
-        self.base_dir = os.path.join(self.api.data_root, "data", self.product,
-                                     self.kepid)
-
+        self.kepid = self.kepid_template.format(**(self.params))
         suffix = self.suffixes[int(self.ktc_target_type != "LC")]
         self._filename = "{0}_{1}{2}".format(self.sci_data_set_name,
                                              suffix, self.filetype).lower()
@@ -616,6 +679,15 @@ class _datafile(Model):
         self.base_dir = ""
         self._filename = fn
         return self
+
+    @property
+    def base_dir(self):
+        """
+        The local base directory for these types of products.
+
+        """
+        return os.path.join(self.api.data_root, "data", self.product,
+                            self.kepid)
 
     @property
     def filename(self):
@@ -632,8 +704,9 @@ class _datafile(Model):
         The remote URL for the data file on the MAST servers.
 
         """
-        return self.base_url.format(self.product, self.kepid[:4],
-                                    self.kepid, self._filename)
+        base_url = "http://archive.stsci.edu/pub/kepler/{0}/{1}/{2}/{3}"
+        return base_url.format(self.product, self.kepid[:4], self.kepid,
+                               self._filename)
 
     def open(self, clobber=False, **kwargs):
         """
@@ -874,3 +947,55 @@ class TargetPixelFile(_datafile):
                     continue
 
         return fig
+
+
+class K2TargetPixelFile(TargetPixelFile):
+    """
+    A reference to a K2 target pixel dataset on the MAST severs. Like the
+    :class:`LightCurve` object, this object handles local caching of the file
+    in a strict directory structure.
+
+    """
+
+    _id = "\"{sci_data_set_name}_{ktc_target_type}\""
+    kepid_template = "{ktc_k2_id:09d}"
+    product = "target_pixel_files"
+    suffixes = ["lpd-targ", "spd-targ"]
+    filetype = ".fits.gz"
+
+    @property
+    def base_dir(self):
+        """
+        The local base directory for these types of products.
+
+        """
+        return os.path.join(self.api.data_root, "data", "k2", self.product,
+                            self.kepid)
+
+    @property
+    def filename(self):
+        """
+        The local filename of the data file. This file is only guaranteed to
+        exist after ``fetch()`` has been called.
+
+        """
+        return os.path.join(self.base_dir, self._filename)
+
+    @property
+    def url(self):
+        """
+        The remote URL for the data file on the MAST servers.
+
+        """
+        if self.sci_campaign != 0:
+            raise NotImplementedError("Only campaign 0 is supported for now")
+        base_url = "http://archive.stsci.edu/pub/k2/"
+        if self.ktc_k2_id < 201000000:
+            base_url += "{0}/c0/200000000/{1}/{2}"
+        else:
+            base_url += "{{0}}/c0/{0}/{{1}}/{{2}}" \
+                .format(int(int(self.ktc_k2_id * 1e-5) * 1e5))
+
+        return base_url.format(self.product,
+                               int(int(int(self.kepid[-5:][-5:])*1e-3)*1e3),
+                               self._filename)
