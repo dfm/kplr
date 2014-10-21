@@ -991,9 +991,9 @@ class K2TargetPixelFile(TargetPixelFile):
             raise NotImplementedError("Only campaign 0 is supported for now")
         base_url = "http://archive.stsci.edu/pub/k2/"
         if self.ktc_k2_id < 201000000:
-            base_url += "{0}/c0/200000000/{1}/{2}"
+            base_url += "{0}/c0/200000000/{1:05d}/{2}"
         else:
-            base_url += "{{0}}/c0/{0}/{{1}}/{{2}}" \
+            base_url += "{{0}}/c0/{0}/{{1:05d}}/{{2}}" \
                 .format(int(int(self.ktc_k2_id * 1e-5) * 1e5))
 
         return base_url.format(self.product,
