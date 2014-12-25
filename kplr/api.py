@@ -246,9 +246,10 @@ class API(object):
             The search parameters for the Exoplanet Archive API.
 
         """
+        params["select"] = params.get("select", "*")
         return [KOI(self, k) for k in self.ea_request("cumulative", **params)]
 
-    def koi(self, koi_number):
+    def koi(self, koi_number, **params):
         """
         Find a single KOI given a KOI number (e.g. 145.01).
 
@@ -258,7 +259,7 @@ class API(object):
 
         """
         kois = self.kois(where="kepoi_name+like+'K{0:08.2f}'"
-                         .format(float(koi_number)))
+                         .format(float(koi_number)), **params)
         if not len(kois):
             raise ValueError("No KOI found with the number: '{0}'"
                              .format(koi_number))
