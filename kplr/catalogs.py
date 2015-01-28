@@ -121,7 +121,6 @@ class PlanetCatalog(ExoplanetArchiveCatalog):
 
 
 class KOICatalog(ExoplanetArchiveCatalog):
-
     name = "cumulative"
 
     def join_stars(self, df=None):
@@ -132,12 +131,10 @@ class KOICatalog(ExoplanetArchiveCatalog):
 
 
 class KICCatalog(ExoplanetArchiveCatalog):
-
     name = "keplerstellar"
 
 
 class EPICCatalog(ExoplanetArchiveCatalog):
-
     name = "k2targets"
 
 
