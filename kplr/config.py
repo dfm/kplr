@@ -1,12 +1,11 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
+from __future__ import division, print_function
 
-__all__ = ["KPLR_ROOT"]
+__all__ = ["KPLR_DATA_DIR"]
 
 import os
 
-KPLR_ROOT = os.path.expanduser(os.environ.get("KPLR_DATA_DIR",
-                                              os.path.join("~", ".kplr")))
+KPLR_DATA_DIR = os.path.expanduser(
+    os.environ.get("KPLR_DATA_DIR", os.path.join("~", ".kplr"))
+)
