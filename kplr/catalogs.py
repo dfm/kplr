@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from six.moves import urllib
 
+from .utils import singleton
 from .coords import radec_to_xyz
 from .config import KPLR_DATA_DIR
 
@@ -78,6 +79,7 @@ class Catalog(object):
     @property
     def df(self):
         if self._df is None:
+            print("loading df")
             if not os.path.exists(self.filename):
                 self.fetch()
             self._df = pd.read_hdf(self.filename, self.name)
@@ -122,6 +124,12 @@ class KOICatalog(ExoplanetArchiveCatalog):
 
     name = "cumulative"
 
+    def join_stars(self, df=None):
+        if df is None:
+            df = self.df
+        kic = KICCatalog(data_root=self.data_root)
+        return pd.merge(df, kic.df, on="kepid")
+
 
 class KICCatalog(ExoplanetArchiveCatalog):
 
@@ -155,3 +163,11 @@ class CatalogDownloadError(Exception):
         self.code = code
         self.txt = txt
         self.url = url
+
+
+# Set all the catalogs to be singletons so that the data are shared across
+# instances.
+PlanetCatalog = singleton(PlanetCatalog)
+KOICatalog = singleton(KOICatalog)
+KICCatalog = singleton(KICCatalog)
+EPICCatalog = singleton(EPICCatalog)
