@@ -10,10 +10,17 @@ __all__ = [
 import os
 import logging
 
+import numpy as np
 import pandas as pd
 from six.moves import urllib
 
+from .coords import radec_to_xyz
 from .config import KPLR_DATA_DIR
+
+try:
+    from scipy.spatial import cKDTree
+except ImportError:
+    cKDTree = None
 
 
 def download():
@@ -30,6 +37,8 @@ class Catalog(object):
 
     def __init__(self, data_root=None):
         self.data_root = KPLR_DATA_DIR if data_root is None else data_root
+        self._df = None
+        self._spatial = None
 
     @property
     def filename(self):
@@ -65,6 +74,29 @@ class Catalog(object):
 
     def _save_fetched_file(self, file_handle):
         raise NotImplementedError("subclasses must implement this method")
+
+    @property
+    def df(self):
+        if self._df is None:
+            if not os.path.exists(self.filename):
+                self.fetch()
+            self._df = pd.read_hdf(self.filename, self.name)
+        return self._df
+
+    @property
+    def spatial(self):
+        if self._spatial is None:
+            self._spatial = self._build_spatial()
+        return self._spatial
+
+    def _build_spatial(self):
+        if cKDTree is None:
+            raise ImportError("scipy is required for spatial search")
+        df = self.df
+        x, y, z = radec_to_xyz(df.ra, df.dec)
+        coords = np.vstack((x, y, z)).T
+        tree = cKDTree(coords)
+        return tree
 
 
 class ExoplanetArchiveCatalog(Catalog):
