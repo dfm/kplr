@@ -12,7 +12,9 @@ import logging
 
 import numpy as np
 import pandas as pd
+
 from six.moves import urllib
+from six.moves import cPickle as pickle
 
 from .utils import singleton
 from .coords import radec_to_xyz
@@ -79,25 +81,44 @@ class Catalog(object):
     @property
     def df(self):
         if self._df is None:
-            print("loading df")
             if not os.path.exists(self.filename):
                 self.fetch()
             self._df = pd.read_hdf(self.filename, self.name)
         return self._df
 
     @property
+    def spatial_filename(self):
+        if self.name is None:
+            raise NotImplementedError("subclasses must provide a name")
+        return os.path.join(self.data_root, "catalogs",
+                            self.name + "-spatial.pkl")
+
+    @property
     def spatial(self):
         if self._spatial is None:
-            self._spatial = self._build_spatial()
+            self._spatial = self.build_spatial_index()
         return self._spatial
 
-    def _build_spatial(self):
+    def build_spatial_index(self, clobber=False):
         if cKDTree is None:
             raise ImportError("scipy is required for spatial search")
+
+        # Return the cached file if it exists.
+        fn = self.spatial_filename
+        if os.path.exists(fn) and not clobber:
+            with open(fn, "r") as f:
+                return pickle.load(f)
+
+        # Build the index.
         df = self.df
         x, y, z = radec_to_xyz(df.ra, df.dec)
         coords = np.vstack((x, y, z)).T
         tree = cKDTree(coords)
+
+        # Cache the index.
+        with open(fn, "w") as f:
+            pickle.dump(tree, f, -1)
+
         return tree
 
 
@@ -116,7 +137,6 @@ class ExoplanetArchiveCatalog(Catalog):
 
 
 class PlanetCatalog(ExoplanetArchiveCatalog):
-
     name = "planets"
 
 
