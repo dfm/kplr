@@ -19,6 +19,12 @@ import six
 from six.moves import urllib
 
 # Optional dependencies.
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
 try:
     import pyfits
 except ImportError:
@@ -557,6 +563,9 @@ class KOI(Model):
             self._star = self.api.star(self.kepid)
         return self._star
 
+    @property
+    def all_LCdata(self):
+        return self.star.all_LCdata
 
 class Planet(Model):
     """
@@ -623,6 +632,22 @@ class Star(Model):
             self._kois = self.api.kois(where="kepid like '{0}'"
                                        .format(self.kepid))
         return self._kois
+
+    @property
+    def all_LCdata(self):
+        """
+        All long cadence light curve data, concatenated
+
+        Returned as :class:`pandas.DataFrame`
+
+        """
+
+        df = pd.DataFrame()
+        for lc in self.get_light_curves():
+            if re.search('_llc\.fits', lc.filename):
+                df = pd.concat([df, lc.data])
+        
+        return df.sort('CADENCENO')
 
 
 class K2Star(Model):
@@ -820,6 +845,19 @@ class LightCurve(_datafile):
     product = "lightcurves"
     suffixes = ["llc", "slc"]
     filetype = ".fits"
+
+    @property
+    def data(self):
+        """
+        Data table as :class:`pandas.DataFrame`
+
+        """
+        with self.open() as f:
+            data = f[1].data
+
+        data = np.array(data).byteswap().newbyteorder()
+
+        return pd.DataFrame(data)
 
     def plot(self):
         """
