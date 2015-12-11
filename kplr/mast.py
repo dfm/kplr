@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Adapters for the field names/types returned by the MAST API.
@@ -14,6 +13,11 @@ __all__ = ["koi_adapter", "planet_adapter", "star_adapter", "dataset_adapter",
 import logging
 
 import six
+
+try:
+    unicode
+except NameError:
+    unicode = str
 
 
 class Adapter(object):
