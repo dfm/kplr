@@ -86,7 +86,7 @@ class API(object):
 
     """
 
-    ea_url = ("http://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
+    ea_url = ("https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
               "/nph-nstedAPI")
     mast_url = "http://archive.stsci.edu/{0}/{1}/search.php"
 
