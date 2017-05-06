@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import (division, print_function, absolute_import,
@@ -87,7 +86,7 @@ class API(object):
 
     """
 
-    ea_url = ("http://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
+    ea_url = ("https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI"
               "/nph-nstedAPI")
     mast_url = "http://archive.stsci.edu/{0}/{1}/search.php"
 
@@ -325,6 +324,36 @@ class API(object):
             raise ValueError("No KIC target found with id: '{0}'"
                              .format(kepid))
         return stars[0]
+    
+    def target(self, kepid, **params):
+        """
+        Get a potential KIC target (not necessarily observed by ths mission) by id from MAST.
+
+        :param kepid:
+            The integer ID of the star in the KIC.
+
+        """
+        stars = self.targets(kic_kepler_id=kepid, max_records=1, **params)
+        if not len(stars):
+            raise ValueError("No KIC target found with id: '{0}'"
+                             .format(kepid))
+        return stars[0]
+    
+    def targets(self, **params):
+        """
+        Get a list of KIC targets from MAST. Only return up to 100 results by
+        default.
+
+        :param **params:
+            The query parameters for the MAST API.
+
+        """
+        params["max_records"] = params.pop("max_records", 100)
+        params["select"] = params.get("select", "*")
+        stars = self.mast_request("kepler_fov", adapter=mast.target_adapter,
+                                  **params)
+        return [Target(self, s) for s in stars]
+
 
     def k2_stars(self, **params):
         """
@@ -624,7 +653,30 @@ class Star(Model):
                                        .format(self.kepid))
         return self._kois
 
+class Target(Model):
+    """
+    An object in the Kepler field from the `Kepler Input Catalog (KIC)
+    <http://archive.stsci.edu/search_fields.php?mission=kepler_fov>`_.
 
+    """
+
+    _id = "{kic_kepler_id}"
+
+    def __init__(self, *args, **params):
+        super(Target, self).__init__(*args, **params)
+        self._kois = None
+
+    @property
+    def kois(self):
+        """
+        The list of :class:`KOI` entries found in this star's light curve.
+
+        """
+        if self._kois is None:
+            self._kois = self.api.kois(where="kepid like '{0}'"
+                                       .format(self.kepid))
+        return self._kois
+    
 class K2Star(Model):
     """
     A star from the `K2 EPIC Catalog (EPIC)
