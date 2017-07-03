@@ -116,7 +116,8 @@ class API(object):
 
         """
         params["table"] = table
-
+        params["format"] = 'pipe'
+        
         # Deal with sort order.
         if sort is not None:
             if isinstance(sort, six.string_types):
@@ -145,10 +146,10 @@ class API(object):
 
         # Parse the CSV output.
         csv = txt.splitlines()
-        columns = csv[0].split(",")
+        columns = csv[0].split("|")
         result = []
         for line in csv[1:]:
-            result.append(dict(zip(columns, line.split(","))))
+            result.append(dict(zip(columns, line.split("|"))))
 
         return [self._munge_dict(row) for row in result]
 
