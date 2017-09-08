@@ -1038,15 +1038,12 @@ class K2TargetPixelFile(TargetPixelFile):
     def url(self):
         """
         The remote URL for the data file on the MAST servers.
-
         """
-        if self.sci_campaign != 0:
-            raise NotImplementedError("Only campaign 0 is supported for now")
         base_url = "http://archive.stsci.edu/pub/k2/"
         if self.ktc_k2_id < 201000000:
-            base_url += "{0}/c0/200000000/{1:05d}/{2}"
+            base_url += "{0}/c%d/200000000/{1:05d}/{2}" % self.sci_campaign
         else:
-            base_url += "{{0}}/c0/{0}/{{1:05d}}/{{2}}" \
+            base_url += ("{{0}}/c%d/{0}/{{1:05d}}/{{2}}" % self.sci_campaign) \
                 .format(int(int(self.ktc_k2_id * 1e-5) * 1e5))
 
         return base_url.format(self.product,
