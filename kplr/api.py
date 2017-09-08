@@ -324,7 +324,7 @@ class API(object):
             raise ValueError("No KIC target found with id: '{0}'"
                              .format(kepid))
         return stars[0]
-    
+
     def target(self, kepid, **params):
         """
         Get a potential KIC target (not necessarily observed by ths mission) by id from MAST.
@@ -338,7 +338,7 @@ class API(object):
             raise ValueError("No KIC target found with id: '{0}'"
                              .format(kepid))
         return stars[0]
-    
+
     def targets(self, **params):
         """
         Get a list of KIC targets from MAST. Only return up to 100 results by
@@ -410,7 +410,7 @@ class API(object):
         return data_list
 
     def light_curves(self, kepler_id=None, short_cadence=True, fetch=False,
-                     clobber=False, async=False, **params):
+                     clobber=False, async=False, cls=None, **params):
         """
         Find the set of light curves associated with a KIC target.
 
@@ -432,11 +432,16 @@ class API(object):
         :param async:
             If ``True``, download the files asynchronously using Tornado.
 
+        :param cls:
+            Class signature for the lightcurve files dataset.
+
         :param ** params:
             Other search parameters to be passed to the MAST data search.
 
         """
-        lcs = [LightCurve(self, d) for d in self._data_search(kepler_id,
+        if cls is None:
+            cls = LightCurve
+        lcs = [cls(self, d) for d in self._data_search(kepler_id,
                short_cadence=short_cadence, **params)]
         if fetch:
             if async:
@@ -468,6 +473,9 @@ class API(object):
 
         :param async:
             If ``True``, download the files asynchronously using Tornado.
+
+        :param cls:
+            Class signature for the target pixel file dataset.
 
         :param ** params:
             Other search parameters to be passed to the MAST data search.
@@ -676,7 +684,7 @@ class Target(Model):
             self._kois = self.api.kois(where="kepid like '{0}'"
                                        .format(self.kepid))
         return self._kois
-    
+
 class K2Star(Model):
     """
     A star from the `K2 EPIC Catalog (EPIC)
@@ -693,7 +701,9 @@ class K2Star(Model):
         documentation.
 
         """
-        raise NotImplementedError("There aren't any light curves for K2 stars")
+        return self.api.light_curves(ktc_k2_id=self.id, mission="k2",
+                                     adapter=mast.k2_dataset_adapter,
+                                     cls=K2LightCurve, **kwargs)
 
     def get_target_pixel_files(self, **kwargs):
         """
@@ -704,8 +714,7 @@ class K2Star(Model):
         """
         return self.api.target_pixel_files(ktc_k2_id=self.id, mission="k2",
                                            adapter=mast.k2_dataset_adapter,
-                                           cls=K2TargetPixelFile,
-                                           **kwargs)
+                                           cls=K2TargetPixelFile, **kwargs)
 
 
 class _datafile(Model):
@@ -1040,14 +1049,54 @@ class K2TargetPixelFile(TargetPixelFile):
         The remote URL for the data file on the MAST servers.
 
         """
-        if self.sci_campaign != 0:
-            raise NotImplementedError("Only campaign 0 is supported for now")
         base_url = "http://archive.stsci.edu/pub/k2/"
         if self.ktc_k2_id < 201000000:
-            base_url += "{0}/c0/200000000/{1:05d}/{2}"
+            base_url += "{0}/c%d/200000000/{1:05d}/{2}" % self.sci_campaign
         else:
-            base_url += "{{0}}/c0/{0}/{{1:05d}}/{{2}}" \
-                .format(int(int(self.ktc_k2_id * 1e-5) * 1e5))
+            base_url += (("{{0}}/c%d/{0}/{{1:05d}}/{{2}}" % self.sci_campaign)
+                         .format(int(int(self.ktc_k2_id * 1e-5) * 1e5)))
+
+        return base_url.format(self.product,
+                               int(int(int(self.kepid[-5:][-5:])*1e-3)*1e3),
+                               self._filename)
+
+class K2LightCurve(LightCurve):
+    _id = "\"{sci_data_set_name}_{ktc_target_type}\""
+    kepid_template = "{ktc_k2_id:09d}"
+    product = "lightcurves"
+    suffixes = ["llc", "slc"]
+    filetype = ".fits"
+
+    @property
+    def base_dir(self):
+        """
+        The local base directory for these types of products.
+
+        """
+        return os.path.join(self.api.data_root, "data", "k2", self.product,
+                            self.kepid)
+
+    @property
+    def filename(self):
+        """
+        The local filename of the data file. This file is only guaranteed to
+        exist after ``fetch()`` has been called.
+
+        """
+        return os.path.join(self.base_dir, self._filename)
+
+    @property
+    def url(self):
+        """
+        The remote URL for the data file on the MAST servers.
+
+        """
+        base_url = "http://archive.stsci.edu/pub/k2/"
+        if self.ktc_k2_id < 201000000:
+            base_url += "{0}/c%d/200000000/{1:05d}/{2}" % self.sci_campaign
+        else:
+            base_url += (("{{0}}/c%d/{0}/{{1:05d}}/{{2}}" % self.sci_campaign)
+                         .format(int(int(self.ktc_k2_id * 1e-5) * 1e5)))
 
         return base_url.format(self.product,
                                int(int(int(self.kepid[-5:][-5:])*1e-3)*1e3),
