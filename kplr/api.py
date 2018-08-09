@@ -410,7 +410,7 @@ class API(object):
         return data_list
 
     def light_curves(self, kepler_id=None, short_cadence=True, fetch=False,
-                     clobber=False, async=False, cls=None, **params):
+                     clobber=False, cls=None, **params):
         """
         Find the set of light curves associated with a KIC target.
 
@@ -429,8 +429,10 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be overwritten even if it already exists.
 
-        :param async:
-            If ``True``, download the files asynchronously using Tornado.
+        :param asynch:
+            If ``True``, download the files asynchronously using Tornado. For
+            backwards compatibility, ``async`` is also a valid name for this
+            parameter.
 
         :param cls:
             Class signature for the lightcurve files dataset.
@@ -439,20 +441,21 @@ class API(object):
             Other search parameters to be passed to the MAST data search.
 
         """
+        asynch = params.pop("async", params.pop("asynch", False))
+
         if cls is None:
             cls = LightCurve
         lcs = [cls(self, d) for d in self._data_search(kepler_id,
                short_cadence=short_cadence, **params)]
         if fetch:
-            if async:
+            if asynch:
                 async_download(lcs, clobber=clobber)
             else:
                 [l.fetch(clobber=clobber) for l in lcs]
         return lcs
 
     def target_pixel_files(self, kepler_id=None, short_cadence=True,
-                           fetch=False, clobber=False, async=False,
-                           cls=None, **params):
+                           fetch=False, clobber=False, cls=None, **params):
         """
         Find the set of target pixel files associated with a KIC target.
 
@@ -471,8 +474,10 @@ class API(object):
             A boolean flag that determines whether or not the data file should
             be overwritten even if it already exists.
 
-        :param async:
-            If ``True``, download the files asynchronously using Tornado.
+        :param asynch:
+            If ``True``, download the files asynchronously using Tornado. For
+            backwards compatibility, ``async`` is also a valid name for this
+            parameter.
 
         :param cls:
             Class signature for the target pixel file dataset.
@@ -481,12 +486,14 @@ class API(object):
             Other search parameters to be passed to the MAST data search.
 
         """
+        asynch = params.pop("async", params.pop("asynch", False))
+
         if cls is None:
             cls = TargetPixelFile
         tpfs = [cls(self, d) for d in self._data_search(kepler_id,
                 short_cadence=short_cadence, **params)]
         if fetch:
-            if async:
+            if asynch:
                 async_download(tpfs, clobber=clobber)
             else:
                 [l.fetch(clobber=clobber) for l in tpfs]
