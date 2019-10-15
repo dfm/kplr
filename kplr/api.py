@@ -71,8 +71,8 @@ else:
         ioloop = tornado.ioloop.IOLoop.instance()
         ioloop.run_sync(f)
 
-from .config import KPLR_ROOT
-from . import mast
+from config import KPLR_ROOT
+import mast
 
 
 class API(object):
