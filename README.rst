@@ -1,3 +1,5 @@
+**WARNING:** This project is deprecated. Please check out `lightkurve <https://docs.lightkurve.org>`_ to interact with Kepler light curve data and `astroquery <https://astroquery.readthedocs.io/en/latest/nasa_exoplanet_archive/nasa_exoplanet_archive.html>`_ to query exoplanet catalogs.
+
 kplr
 ====
 
