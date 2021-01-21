@@ -3,7 +3,7 @@ kplr
 
 Pythonic access to `Kepler <http://kepler.nasa.gov/>`_ data.
 
-Read `the documentation <http://dan.iel.fm/kplr>`_!
+Read `the documentation <https://dfm.io/kplr>`_!
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. image:: http://img.shields.io/pypi/dm/kplr.svg?style=flat
