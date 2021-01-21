@@ -4,29 +4,10 @@
 import os
 import sys
 
-try:
-    from setuptools import setup
-    setup
-except ImportError:
-    from distutils.core import setup
-    setup
-
-if sys.argv[-1] == "publish":
-    os.system("python setup.py sdist upload")
-    sys.exit()
-
-# Hackishly inject a constant into builtins to enable importing of the
-# module.
-if sys.version_info[0] < 3:
-    import __builtin__ as builtins
-else:
-    import builtins
-builtins.__KPLR_SETUP__ = True
-import kplr
+from setuptools import setup
 
 setup(
     name="kplr",
-    version=kplr.__version__,
     author="Daniel Foreman-Mackey",
     author_email="danfm@nyu.edu",
     packages=["kplr"],
