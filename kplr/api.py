@@ -7,9 +7,9 @@ __all__ = ["API", "KOI", "Planet", "Star", "LightCurve", "TargetPixelFile"]
 
 import os
 import re
-import json
 import shutil
 import logging
+import requests
 from itertools import product
 from functools import partial
 from tempfile import NamedTemporaryFile
@@ -19,12 +19,9 @@ from six.moves import urllib
 
 # Optional dependencies.
 try:
-    import pyfits
+    import astropy.io.fits as pyfits
 except ImportError:
-    try:
-        import astropy.io.fits as pyfits
-    except ImportError:
-        pyfits = None
+    pyfits = None
 
 try:
     import fitsio
@@ -132,16 +129,9 @@ class API(object):
                    for k, v in params.items()]
 
         # Send the request.
-        encoded_data = "&".join(payload).encode("ascii")
-        r = urllib.request.Request(self.ea_url, data=encoded_data)
-        handler = urllib.request.urlopen(r)
-        code = handler.getcode()
-        txt = handler.read().decode("ascii")
-
-        # Hack because Exoplanet Archive doesn't return HTTP errors.
-        if int(code) != 200 or "ERROR" in txt:
-            full_url = handler.geturl() + "?" + "&".join(payload)
-            raise APIError(code, full_url, txt)
+        r = requests.get(self.ea_url, params=payload)
+        r.raise_for_status()
+        txt = r.text
 
         # Parse the CSV output.
         csv = txt.splitlines()
@@ -179,27 +169,15 @@ class API(object):
                     params["descending1"] = "on"
 
         # Send the request.
-        encoded_data = urllib.parse.urlencode(params).encode("ascii")
-        r = urllib.request.Request(self.mast_url.format(mission, category),
-                                   data=encoded_data)
-        handler = urllib.request.urlopen(r)
-        code = handler.getcode()
-        txt = handler.read().decode("ascii")
-        if int(code) != 200:
-            full_url = handler.geturl() + "?" + urllib.parse.urlencode(params)
-            raise APIError(code, full_url, txt)
+        r = requests.get(self.mast_url.format(mission, category), params=params)
+        r.raise_for_status()
 
         # Check for no rows found.
-        if "no rows" in txt:
+        if "no rows" in r.text:
             return []
 
         # Parse the JSON.
-        try:
-            result = json.loads(txt)
-        except ValueError:
-            full_url = handler.geturl() + "?" + urllib.parse.urlencode(params)
-            raise APIError(code, full_url,
-                           "No JSON object could be decoded.\n" + txt)
+        result = r.json()
 
         # Fake munge the types if no adapter was provided.
         if adapter is None:
@@ -841,12 +819,9 @@ class _datafile(Model):
         # Fetch the remote file.
         url = self.url
         logging.info("Downloading file from: '{0}'".format(url))
-        r = urllib.request.Request(url)
-        handler = urllib.request.urlopen(r)
-        code = handler.getcode()
-        if int(code) != 200:
-            raise APIError(code, url, "")
-        return self._save_fetched_file(handler.read())
+        r = requests.get(url)
+        r.raise_for_status()
+        return self._save_fetched_file(r.content)
 
     def _save_fetched_file(self, data):
         # Make sure that the root directory exists.

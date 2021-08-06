@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-
 from setuptools import setup
 
 setup(
@@ -15,7 +12,7 @@ setup(
     license="MIT",
     description="Tools for working with Kepler data in Python",
     long_description=open("README.rst").read(),
-    install_requires=["six"],
+    install_requires=["six", "requests"],
     classifiers=[
         # "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
